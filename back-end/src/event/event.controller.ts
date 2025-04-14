@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { EventService } from './event.service';
 import { Event } from './entities/event.entity';
 
@@ -9,5 +9,12 @@ export class EventController {
   @Get()
   async getEvents(): Promise<Event[]> {
     return await this.eventService.getEvents();
+  }
+  @Post()
+  async createEvent(
+    @Body()
+    event: Event,
+  ): Promise<Event> {
+    return await this.eventService.createEvent(event);
   }
 }

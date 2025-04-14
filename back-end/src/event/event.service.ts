@@ -12,5 +12,7 @@ export class EventService {
   async getEvents(): Promise<Event[]> {
     return await this.EventRepository.find();
   }
-  addEvent() {}
+  async createEvent(event: Event): Promise<Event> {
+    return await this.EventRepository.save(event);
+  }
 }
