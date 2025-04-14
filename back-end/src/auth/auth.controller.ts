@@ -22,6 +22,6 @@ export class AuthController {
   @Get()
   @UseGuards(JwtAuthGuard)
   test() {
-    return "access is granted"
+    return 'access is granted';
   }
 }
