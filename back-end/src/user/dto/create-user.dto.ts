@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   IsEmail,
   IsNotEmpty,
   IsString,
   IsDate,
   IsPhoneNumber,
+  IsOptional,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -29,4 +30,8 @@ export class CreateUserDto {
   @Type(() => Date)
   @IsDate()
   birthDate: Date;
+
+  @IsOptional()
+  @IsIn(['user', 'admin'])
+  role?: 'user' | 'admin';
 }
