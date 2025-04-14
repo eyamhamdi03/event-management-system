@@ -15,10 +15,22 @@ export class User extends TimestampEntities {
 
   @Column()
   password: string;
+
   @Column()
   phone: number;
+
   @Column()
   birthDate: Date;
+
+  @Column(
+    { nullable: true },
+  )
+  salt: string;
+
+  @Column({ default: 'user' })
+  role: string;
+
   @OneToMany(() => Registration, (registration) => registration.user)
   registrations: Registration[];
+
 }
