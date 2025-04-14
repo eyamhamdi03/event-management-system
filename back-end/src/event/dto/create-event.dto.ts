@@ -1,5 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsNotEmpty, IsString, IsDate } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsDate,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateEventDto {
@@ -12,11 +17,22 @@ export class CreateEventDto {
   description: string;
 
   @IsNotEmpty()
-  @IsDate()
   @Type(() => Date)
+  @IsDate()
   eventDate: Date;
 
   @IsNotEmpty()
   @IsString()
   location: string;
+
+  @IsNotEmpty()
+  @IsString()
+  hostId: string;
+
+  @IsOptional()
+  @IsBoolean()
+  validated?: boolean;
+  @IsNotEmpty()
+  @IsString()
+  categoryId: string;
 }
