@@ -5,10 +5,15 @@ import { UserModule } from './user/user.module';
 import { EventModule } from './event/event.module';
 import { RegistrationModule } from './registration/registration.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { User } from './user/entities/user.entity';
+import { Event } from './event/entities/event.entity';
+import { Registration } from './registration/entities/registration.entity';
 import * as dotenv from 'dotenv';
 dotenv.config();
 @Module({
   imports: [
+    AuthModule,
     UserModule,
     EventModule,
     RegistrationModule,
@@ -19,7 +24,7 @@ dotenv.config();
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: ['dist/**/*.entity{.ts,.js}'],
+      entities: [User, Event, Registration,],
       synchronize: true,
     }),
   ],
