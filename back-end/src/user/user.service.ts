@@ -53,5 +53,32 @@ export class UserService {
     return this.UserRepository.findOne({
       where: [{ fullName }, { email }],
     });
+
+  }
+
+  async findById(id: string): Promise<User | null> {
+    return this.UserRepository.findOne({ where: { id } });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.UserRepository.findOne({ where: { email } });
+  }
+
+  async setPasswordResetToken(userId: string, token: string): Promise<void> {
+    await this.UserRepository.update(userId, { passwordResetToken: token });
+  }
+
+  async clearPasswordResetToken(userId: string): Promise<void> {
+    await this.UserRepository.update(userId, { passwordResetToken: null });
+  }
+
+  async updateUserPassword(userId: string, newPassword: string, newSalt: string): Promise<void> {
+    await this.UserRepository.update(userId, { 
+      password: newPassword,
+      salt: newSalt
+    });
+
+  }
+
   }
 }
