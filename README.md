@@ -63,7 +63,10 @@ cd back-end
 2. Install dependencies:
 
 ```bash
+npm i dotenv
 npm install
+npx husky-init && npm install
+npm install --save-dev lint-staged
 npm install @types/jsonwebtoken                                                                   
 npm install class-validator
 npm install @nestjs/passport passport passport-local
@@ -72,12 +75,16 @@ npm install --save-dev @types/passport-jwt
 npm install @nestjs/config        
 npm install bcrypt  
 npm install nodemailer
-
+npm install --save @nestjs/typeorm typeorm mysql
+npm install class-transformer
+npm i @ngneat/falso
+npm install -D ts-node
 ```
 
 3. Configure the PostgreSQL database (add credentials to `.env` file, for example):
 
 ```plaintext
+APP_PORT=1111
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=your_db_user

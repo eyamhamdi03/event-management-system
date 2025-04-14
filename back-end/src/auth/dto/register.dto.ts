@@ -14,7 +14,6 @@ export class RegisterDto {
   @IsNumber()
   phone: number;
 
-  
   @IsDate()
   @Transform(({ value }) => new Date(value))
   birthDate: Date;
