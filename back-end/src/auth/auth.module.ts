@@ -7,11 +7,14 @@ import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
+import { MailModule } from '../mail/mail.module';
+
 dotenv.config();
 
 @Module({
 
   imports: [
+    MailModule,
     ConfigModule,
     UserModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),

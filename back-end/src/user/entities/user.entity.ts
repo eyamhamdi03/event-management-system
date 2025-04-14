@@ -33,4 +33,12 @@ export class User extends TimestampEntities {
   @OneToMany(() => Registration, (registration) => registration.user)
   registrations: Registration[];
 
+
+  @Column({ 
+    name: 'password_reset_token',
+    type: 'varchar', 
+    length: 255,     
+    nullable: true   
+  })
+  passwordResetToken: string | null;
 }

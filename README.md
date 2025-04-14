@@ -64,6 +64,15 @@ cd back-end
 
 ```bash
 npm install
+npm install @types/jsonwebtoken                                                                   
+npm install class-validator
+npm install @nestjs/passport passport passport-local
+npm install @nestjs/jwt passport-jwt
+npm install --save-dev @types/passport-jwt
+npm install @nestjs/config        
+npm install bcrypt  
+npm install nodemailer
+
 ```
 
 3. Configure the PostgreSQL database (add credentials to `.env` file, for example):
