@@ -63,6 +63,7 @@ cd back-end
 2. Install dependencies:
 
 ```bash
+
 npm i dotenv
 npm install
 npx husky-init && npm install
@@ -79,14 +80,18 @@ npm install --save @nestjs/typeorm typeorm mysql
 npm install class-transformer
 npm i @ngneat/falso
 npm install -D ts-node
+
+
+
 ```
 
 3. Configure the PostgreSQL database (add credentials to `.env` file, for example):
 
 ```plaintext
-APP_PORT=1111
+
+APP_PORT=3000
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=3306
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=event_management_db

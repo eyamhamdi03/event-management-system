@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Registration } from '../../registration/entities/registration.entity';
 import { TimestampEntities } from 'src/generics/timestamp.entities';
 import { Event } from '../../event/entities/event.entity';
+import { Role } from 'src/auth/roles.enum';
 
 @Entity()
 export class User extends TimestampEntities {
@@ -26,12 +27,15 @@ export class User extends TimestampEntities {
   @Column({ nullable: true })
   salt: string;
 
-  @Column({ default: 'user' })
-  role: string;
+  @Column({
+    type: 'enum',
+    enum: Role,
+    default: Role.User
+  })
+  role: Role;
 
   @OneToMany(() => Registration, (registration) => registration.user)
   registrations: Registration[];
-
 
   @Column({ 
     name: 'password_reset_token',
