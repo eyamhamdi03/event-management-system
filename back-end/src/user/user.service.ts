@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {Role} from 'src/auth/roles.enum'
 @Injectable()
 export class UserService {
   constructor(
@@ -22,7 +23,7 @@ export class UserService {
     email: string;
     password: string;
     salt: string;
-    role: string;
+    role: Role;
     phone: number;
     birthDate: Date;
   }): Promise<User> {

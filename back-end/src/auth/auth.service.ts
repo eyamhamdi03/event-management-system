@@ -8,7 +8,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from '../mail/mail.service'; 
 import { ConfigService } from '@nestjs/config';
-
+import {Role} from "src/auth/roles.enum"
 @Injectable()
 export class AuthService {
   constructor(private usersService: UserService,
@@ -35,7 +35,7 @@ export class AuthService {
         email,
         password: hashedPassword,
         salt: salt,
-        role: 'user' ,
+        role: Role.User ,
         phone: dto.phone,
         birthDate: dto.birthDate
       });

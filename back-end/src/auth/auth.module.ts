@@ -8,6 +8,8 @@ import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { MailModule } from '../mail/mail.module';
+import { RolesGuard } from './guards/roles.guard';
+import {APP_GUARD} from "@nestjs/core"
 
 dotenv.config();
 
@@ -25,8 +27,16 @@ dotenv.config();
     }),
   ],
 
-  providers: [AuthService, JwtStrategy],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },]
+    ,
 
   controllers: [AuthController],
+  exports: [JwtStrategy, PassportModule], 
 })
 export class AuthModule {}
