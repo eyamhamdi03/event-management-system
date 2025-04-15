@@ -9,6 +9,8 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum'; 
 import { Public } from '../auth/decorators/public.decorator';
+import { Req } from '@nestjs/common';
+import { Request } from 'express';
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -46,6 +48,12 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Req() req: Request) {
+    return req.user;
   }
 }
 
