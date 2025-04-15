@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {Role} from 'src/auth/roles.enum'
+import {Role} from 'src/auth/roles.enum';
+import { NotFoundException } from '@nestjs/common';
 @Injectable()
 export class UserService {
   constructor(
@@ -18,6 +19,7 @@ export class UserService {
     role,
     phone,
     birthDate,
+    emailVerified,
   }: {
     fullName: string;
     email: string;
@@ -26,6 +28,7 @@ export class UserService {
     role: Role;
     phone: number;
     birthDate: Date;
+    emailVerified: boolean;
   }): Promise<User> {
     const user = this.UserRepository.create({
       fullName,
@@ -35,6 +38,7 @@ export class UserService {
       role,
       phone,
       birthDate,
+      emailVerified,
     });
     return this.UserRepository.save(user);
   }
@@ -81,6 +85,28 @@ export class UserService {
     });
 
   }
+
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    const user = await this.UserRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    user.refreshToken = refreshToken;
+    await this.UserRepository.save(user);
+  }
+  
+  async updateEmailVerificationToken(userId: string, token: string) {
+    return this.UserRepository.update(userId, {
+      emailVerificationToken: token,
+    });
+  }
+  
+  async markEmailVerified(userId: string) {
+    return this.UserRepository.update(userId, {
+      emailVerified: true,
+      emailVerificationToken: "",
+    });
+  }
+  
+
 }
   
 
