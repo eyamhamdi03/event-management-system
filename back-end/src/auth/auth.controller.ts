@@ -55,5 +55,12 @@ export class AuthController {
   getMe(@Req() req: Request) {
     return req.user;
   }
+
+  
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@Req() req: Request) {
+  const user = req.user as { sub: string }; 
+  return this.authService.logout(user.sub);}
 }
 

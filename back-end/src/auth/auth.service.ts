@@ -59,11 +59,19 @@ export class AuthService {
         email: user.email,
         role: user.role};
 
-    const jwt = await this.jwtService.sign(payload)
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
 
-   return {
-    "access_token": jwt
-   };
+    const hashedToken = await bcrypt.hash(refreshToken, 10);
+    await this.usersService.updateRefreshToken(user.id, hashedToken);
+    
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
@@ -131,6 +139,14 @@ export class AuthService {
       throw new BadRequestException('Invalid reset token');
     }
   }
+
+
+  async logout(userId: string) {
+    await this.usersService.updateRefreshToken(userId, "");
+    return { message: 'Logged out successfully' };
+
+  }
+  
 }
 
   

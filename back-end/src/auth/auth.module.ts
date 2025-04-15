@@ -11,8 +11,9 @@ import { MailModule } from '../mail/mail.module';
 import { RolesGuard } from './guards/roles.guard';
 import {APP_GUARD} from "@nestjs/core"
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-
+import { ConfigService } from '@nestjs/config';
 dotenv.config();
+
 
 @Module({
   imports: [
@@ -20,12 +21,14 @@ dotenv.config();
     ConfigModule,
     UserModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'mysecret',
-      signOptions: {
-        expiresIn: 3600,
-      },
-    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '15m' },
+      }),
+    }),    
   ],
 
 
@@ -47,3 +50,5 @@ dotenv.config();
 
 })
 export class AuthModule {}
+
+

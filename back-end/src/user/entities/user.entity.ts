@@ -45,6 +45,11 @@ export class User extends TimestampEntities {
   })
   passwordResetToken: string | null;
 
+
+  @Column({ type: 'text', nullable: true })
+  refreshToken: string | null;
+
+
   @OneToMany(() => Event, (event) => event.host)
   hostedEvents: Event[];
 
