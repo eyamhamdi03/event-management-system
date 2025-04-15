@@ -1,6 +1,5 @@
 import {Body,Controller,Delete,Get,Param,Patch,Post,Put,} from '@nestjs/common';
 import { Event } from './entities/event.entity';
-
 import { UseGuards } from '@nestjs/common';
 import { EventService } from './event.service';
 import { Roles } from '../auth/decorators/roles.decorator';

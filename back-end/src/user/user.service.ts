@@ -47,6 +47,7 @@ export class UserService {
     return this.UserRepository.findOne({ where: { fullName } });
   }
 
+ 
   async findByfullNameOrEmail(
     fullName: string,
     email: string,
@@ -80,5 +81,6 @@ export class UserService {
     });
 
   }
-
 }
+  
+

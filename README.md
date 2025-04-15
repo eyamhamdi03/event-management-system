@@ -63,24 +63,23 @@ cd back-end
 2. Install dependencies:
 
 ```bash
-npm install  
+
 npm i dotenv
+npm install
+npx husky-init && npm install
+npm install --save-dev lint-staged
+npm install @types/jsonwebtoken                                                                   
+npm install class-validator
 npm install @nestjs/passport passport passport-local
 npm install @nestjs/jwt passport-jwt
 npm install --save-dev @types/passport-jwt
 npm install @nestjs/config        
 npm install bcrypt  
 npm install nodemailer
-npm install nodemailernpx husky-init && npm install
-npm install @types/jsonwebtoken                                                                   
-npm install class-validator
-npm install nodemailer
-npm install --save-dev lint-staged
 npm install --save @nestjs/typeorm typeorm mysql
 npm install class-transformer
 npm i @ngneat/falso
 npm install -D ts-node
-
 
 
 
@@ -90,9 +89,9 @@ npm install -D ts-node
 
 ```plaintext
 
-APP_PORT=1111
+APP_PORT=3000
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=3306
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=event_management_db

@@ -33,10 +33,10 @@ dotenv.config();
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
-    },]
-    ,
+    },],
 
   controllers: [AuthController],
   exports: [JwtStrategy, PassportModule], 
+
 })
 export class AuthModule {}

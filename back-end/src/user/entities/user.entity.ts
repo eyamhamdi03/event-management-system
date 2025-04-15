@@ -47,4 +47,5 @@ export class User extends TimestampEntities {
 
   @OneToMany(() => Event, (event) => event.host)
   hostedEvents: Event[];
+
 }
