@@ -53,4 +53,9 @@ export class User extends TimestampEntities {
   @OneToMany(() => Event, (event) => event.host)
   hostedEvents: Event[];
 
+  @Column({ default: false })
+  emailVerified: boolean;
+
+  @Column({ nullable: true })
+  emailVerificationToken: string;
 }

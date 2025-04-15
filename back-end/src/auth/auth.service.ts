@@ -37,11 +37,27 @@ export class AuthService {
         salt: salt,
         role: Role.User ,
         phone: dto.phone,
-        birthDate: dto.birthDate
+        birthDate: dto.birthDate,
+        emailVerified: false,
       });
+  // Generate email verification token
+  const emailVerificationToken = this.jwtService.sign(
+    { userId: user.id },
+    {
+      secret: this.configService.get('JWT_VERIFY_SECRET'),
+      expiresIn: '1d',
+    }
+  );
 
-      const { password: _, salt: __, ...result } = user;
-      return result;
+    // Save the token to the user
+    await this.usersService.updateEmailVerificationToken(user.id, emailVerificationToken);
+
+    // Send verification email
+    const verificationUrl = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${emailVerificationToken}`;
+    await this.mailService.sendVerificationEmail(email, fullName, verificationUrl);
+
+    const { password: _, salt: __, emailVerificationToken: ___, ...result } = user;
+    return result;
   }
 
   async login(credentials: LoginDto) {
@@ -106,8 +122,6 @@ export class AuthService {
     return { message: 'If an account with that email exists, a reset link has been sent' };
   }
 
-
-
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const { token, newPassword } = resetPasswordDto;
 
@@ -140,10 +154,37 @@ export class AuthService {
     }
   }
 
-
   async logout(userId: string) {
     await this.usersService.updateRefreshToken(userId, "");
     return { message: 'Logged out successfully' };
+
+  }
+  
+  async verifyEmail(token: string) {
+
+
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_VERIFY_SECRET'),
+      });
+      console.log('Decoded payload:', payload);
+      
+      const user = await this.usersService.findById(payload.userId);
+      if (!user) throw new NotFoundException('User not found');
+      if (user.emailVerified) return { message: 'Email already verified' };
+  
+      if (user.emailVerificationToken !== token) {
+        throw new UnauthorizedException('Invalid token');
+      }
+
+      //await this.usersService.clearEmailVerificationToken(user.id); 
+
+      await this.usersService.markEmailVerified(user.id);
+      return { message: 'Email successfully verified' };
+        } catch (e) {
+      console.error('Token verification failed:', e.message);
+      throw new BadRequestException('Invalid or expired token');
+    }
 
   }
   

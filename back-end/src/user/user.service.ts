@@ -19,6 +19,7 @@ export class UserService {
     role,
     phone,
     birthDate,
+    emailVerified,
   }: {
     fullName: string;
     email: string;
@@ -27,6 +28,7 @@ export class UserService {
     role: Role;
     phone: number;
     birthDate: Date;
+    emailVerified: boolean;
   }): Promise<User> {
     const user = this.UserRepository.create({
       fullName,
@@ -36,6 +38,7 @@ export class UserService {
       role,
       phone,
       birthDate,
+      emailVerified,
     });
     return this.UserRepository.save(user);
   }
@@ -88,6 +91,19 @@ export class UserService {
     if (!user) throw new NotFoundException('User not found');
     user.refreshToken = refreshToken;
     await this.UserRepository.save(user);
+  }
+  
+  async updateEmailVerificationToken(userId: string, token: string) {
+    return this.UserRepository.update(userId, {
+      emailVerificationToken: token,
+    });
+  }
+  
+  async markEmailVerified(userId: string) {
+    return this.UserRepository.update(userId, {
+      emailVerified: true,
+      emailVerificationToken: "",
+    });
   }
   
 
