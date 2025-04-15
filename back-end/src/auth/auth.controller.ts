@@ -27,13 +27,12 @@ export class AuthController {
 
   @Get('admin')
   @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
   testAuth() {
     return "access is granted: admin"
   }
 
-
-  
-  @Get()
+  @Get('auth')
   @UseGuards(JwtAuthGuard)
   test() {
     return "access is granted"
