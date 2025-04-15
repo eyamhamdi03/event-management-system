@@ -20,16 +20,32 @@ export class MailService {
     const mailOptions = {
       from: this.configService.get('EMAIL_FROM'),
       to: email,
-      subject: 'Password Reset Request',
+      subject: 'Reset Your Password',
       html: `
-        <p>Hello ${name},</p>
-        <p>You requested to reset your password. Click the link below to set a new password:</p>
-        <p><a href="${resetUrl}">Reset Password</a></p>
-        <p>If you didn't request this, please ignore this email.</p>
-        <p>This link will expire in 1 hour.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
+          <div style="text-align: center;">
+            <h2 style="color: #ff6f00;">Password Reset Request</h2>
+          </div>
+          <p style="font-size: 16px;">Hi <strong>${name}</strong>,</p>
+          <p style="font-size: 16px;">
+            We received a request to reset your password. Click the button below to proceed:
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #ff6f00; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-size: 16px;">
+              Reset Password
+            </a>
+          </div>
+          <p style="font-size: 14px; color: #888888;">
+            If you didn’t request a password reset, you can safely ignore this email. Your password will remain unchanged.
+          </p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
+          <p style="font-size: 12px; color: #999999; text-align: center;">
+            This link will expire in 1 hour.
+          </p>
+        </div>
       `,
     };
-
+  
     await this.transporter.sendMail(mailOptions);
   }
 
@@ -57,7 +73,6 @@ export class MailService {
     };
   
     await this.transporter.sendMail(mailOptions);
-  }
-  
+  } 
   
 }

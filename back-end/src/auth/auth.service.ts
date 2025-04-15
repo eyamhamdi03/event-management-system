@@ -40,8 +40,8 @@ export class AuthService {
         birthDate: dto.birthDate,
         emailVerified: false,
       });
-  // Generate email verification token
-  const emailVerificationToken = this.jwtService.sign(
+
+      const emailVerificationToken = this.jwtService.sign(
     { userId: user.id },
     {
       secret: this.configService.get('JWT_VERIFY_SECRET'),
