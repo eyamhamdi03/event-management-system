@@ -9,6 +9,16 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from '../mail/mail.service'; 
 import { ConfigService } from '@nestjs/config';
 import {Role} from "src/auth/roles.enum"
+import { User } from 'src/user/entities/user.entity';
+import { SocialProvider } from './socialProviders.enum';
+import { SocialUserDto } from './dto/social-user.dto';
+import { AuthResultDto } from './dto/auth-result.dto';  
+import { UserResponseDto } from './dto/user-response.dto';
+import { JwtPayloadDto } from './dto/jwt-payload.dto';
+import { TokenResponseDto } from './dto/token-response.dto';
+
+
+
 @Injectable()
 export class AuthService {
   constructor(private usersService: UserService,
@@ -39,6 +49,8 @@ export class AuthService {
         phone: dto.phone,
         birthDate: dto.birthDate,
         emailVerified: false,
+        provider: 'local',
+        avatar: dto.avatar || '',
       });
 
       const emailVerificationToken = this.jwtService.sign(
@@ -187,7 +199,71 @@ export class AuthService {
     }
 
   }
-  
+
+
+  async validateSocialUser(user: SocialUserDto): Promise<AuthResultDto> {
+    // Normalize email to lowercase to avoid case sensitivity issues
+    const normalizedEmail = user.email.toLowerCase();
+    
+    // Check if user exists
+    let existingUser = await this.usersService.findByEmail(normalizedEmail);
+    
+    if (!existingUser) {
+      existingUser = await this.createSocialUser(user);
+    }
+
+    return this.generateAuthTokens(existingUser);
+  }
+
+  private async createSocialUser(user: SocialUserDto) {
+    const fullName = `${user.firstName} ${user.lastName}`.trim();
+    
+    return this.usersService.createUser({
+      fullName,
+      email: user.email.toLowerCase(),
+      password: "", 
+      salt: "",
+      role: Role.User,
+      birthDate: new Date(), 
+      phone: 0, 
+      emailVerified: true,
+      provider: user.provider,
+      avatar: user.picture || "", 
+    });
+  }
+
+  private generateAuthTokens(user: User): AuthResultDto {
+    const payload = {
+      sub: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    };
+
+    return {
+      access_token: this.jwtService.sign(payload),
+      user,
+    };
+  }
+
+  async handleGoogleRedirect(socialUser: any): Promise<string> {
+    if (!socialUser) {
+      throw new Error('Social authentication failed');
+    }
+
+    const { email, firstName, lastName, provider, picture } = socialUser;
+    const result = await this.validateSocialUser({
+      email,
+      firstName,
+      lastName,
+      picture,
+      provider,
+    });
+
+    const frontendUrl = this.configService.get('FRONTEND_URL');
+    return `${frontendUrl}/auth/callback?token=${result.access_token}`;
+  }
+
 }
 
   

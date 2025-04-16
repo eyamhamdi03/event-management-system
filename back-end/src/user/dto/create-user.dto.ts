@@ -1,12 +1,4 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsString,
-  IsDate,
-  IsPhoneNumber,
-  IsOptional,
-  IsIn,
-} from 'class-validator';
+import {IsEmail,IsNotEmpty,IsString,IsDate,IsPhoneNumber,IsOptional,IsIn,} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateUserDto {
@@ -34,4 +26,7 @@ export class CreateUserDto {
   @IsOptional()
   @IsIn(['user', 'admin'])
   role?: 'user' | 'admin';
+
+  @IsOptional()
+  avatar?: string; 
 }

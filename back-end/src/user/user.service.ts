@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {Role} from 'src/auth/roles.enum';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, Injectable } from '@nestjs/common';
 @Injectable()
 export class UserService {
+
   constructor(
     @InjectRepository(User)
     private UserRepository: Repository<User>,
@@ -20,6 +20,8 @@ export class UserService {
     phone,
     birthDate,
     emailVerified,
+    provider,
+    avatar,
   }: {
     fullName: string;
     email: string;
@@ -29,6 +31,8 @@ export class UserService {
     phone: number;
     birthDate: Date;
     emailVerified: boolean;
+    provider : string;
+    avatar : string;
   }): Promise<User> {
     const user = this.UserRepository.create({
       fullName,
@@ -39,6 +43,8 @@ export class UserService {
       phone,
       birthDate,
       emailVerified,
+      provider,
+      avatar,
     });
     return this.UserRepository.save(user);
   }
@@ -51,7 +57,6 @@ export class UserService {
     return this.UserRepository.findOne({ where: { fullName } });
   }
 
- 
   async findByfullNameOrEmail(
     fullName: string,
     email: string,
@@ -106,7 +111,19 @@ export class UserService {
     });
   }
   
-
+  async deleteUser(userId: string): Promise<{ message: string }> {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+  
+    const deleteResult = await this.UserRepository.delete({ id: userId });
+    
+    if (deleteResult.affected === 0) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+  
+    return { message: 'User deleted successfully' };
+  }
 }
   
 

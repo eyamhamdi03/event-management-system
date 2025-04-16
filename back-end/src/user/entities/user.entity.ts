@@ -3,25 +3,33 @@ import { Registration } from '../../registration/entities/registration.entity';
 import { TimestampEntities } from 'src/generics/timestamp.entities';
 import { Event } from '../../event/entities/event.entity';
 import { Role } from 'src/auth/roles.enum';
-
+import { SocialProvider } from 'src/auth/socialProviders.enum';
 @Entity()
 export class User extends TimestampEntities {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column(
+    {nullable: true}
+  )
   fullName: string;
 
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column(
+    {nullable: true}
+  )
   password: string;
 
-  @Column()
+  @Column(
+    {nullable: true}
+  )
   phone: number;
 
-  @Column()
+  @Column(
+    {nullable: true}
+  )
   birthDate: Date;
 
   @Column({ nullable: true })
@@ -58,4 +66,17 @@ export class User extends TimestampEntities {
 
   @Column({ nullable: true })
   emailVerificationToken: string;
+
+  @Column({ nullable: true })
+  socialId: string; // The ID from the social provider
+
+  @Column({ nullable: true })
+  avatar: string; // The URL of the user's avatar
+
+  @Column({ 
+    type: 'enum',
+    enum: SocialProvider,
+    default: SocialProvider.Local
+    })
+    provider: string;
 }

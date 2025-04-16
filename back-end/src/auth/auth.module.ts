@@ -12,11 +12,15 @@ import { RolesGuard } from './guards/roles.guard';
 import {APP_GUARD} from "@nestjs/core"
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ConfigService } from '@nestjs/config';
+import { GoogleStrategy } from './google.strategy';import { SocialProvider } from './socialProviders.enum';
+import { sourceMapsEnabled } from 'process';
+
 dotenv.config();
 
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'google' }),
     MailModule,
     ConfigModule,
     UserModule,
@@ -31,10 +35,11 @@ dotenv.config();
     }),    
   ],
 
-
     providers: [
       AuthService,
       JwtStrategy,
+      GoogleStrategy,
+    
       {
         provide: APP_GUARD,
         useClass: JwtAuthGuard, 
