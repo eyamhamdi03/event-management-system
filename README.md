@@ -85,18 +85,40 @@ npm install -D ts-node
 
 ```
 
-3. Configure the PostgreSQL database (add credentials to `.env` file, for example):
+3. ## Environment Configuration
+
+1. Create a `.env` file in the root directory with these variables:
 
 ```plaintext
-
+# Application
 APP_PORT=3000
+FRONTEND_URL=http://frontend-app.com
+
+# Database
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=event_management_db
-```
 
+# Authentication
+JWT_SECRET=your_jwt_secret_here
+JWT_REFRESH_SECRET=your_refresh_secret_here
+JWT_RESET_SECRET=your_reset_secret_here
+JWT_VERIFY_SECRET=your_verify_secret_here
+JWT_EXPIRATION=3600 # 1 hour in seconds
+
+# Email Service
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_app_specific_password
+EMAIL_FROM=no-reply@yourapp.com
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+
+```
 4. Start the back-end server:
 
 ```bash
