@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get,Req,Query ,UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get,Req,Query ,UseGuards, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -9,9 +9,15 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum'; 
 import { Public } from '../auth/decorators/public.decorator';
 import { Request } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
+
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,    
+    private configService: ConfigService 
+  ) {}
 
   @Post('register')
   @Public() 
@@ -54,19 +60,60 @@ export class AuthController {
     return req.user;
   }
 
-  
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Req() req: Request) {
   const user = req.user as { sub: string }; 
   return this.authService.logout(user.sub);}
 
-
   @Public()
   @Get('verify-email')
   async verifyEmail(@Query('token') token: string) {
   return this.authService.verifyEmail(token);
 }
+
+  @Get('google')
+  @Public()
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // Initiates the Google OAuth flow
+  }
+
+  @Get('google/callback')
+  @Public()
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Req() req: Request, @Res() res: any) {
+    if (!req.user) {
+      return res.redirect(`${this.configService.get('FRONTEND_URL')}/login?error=social_auth_failed`);
+    }
+
+  const SocialUserDto = req.user as {
+    email: string;
+    firstName: string;
+    lastName: string;
+    provider: string;
+    accessToken: string;
+  };
+
+  try {
+    const result = await this.authService.validateSocialUser({
+      email: SocialUserDto.email,
+      firstName: SocialUserDto.firstName,
+      lastName: SocialUserDto.lastName,
+      provider: "google",
+    });
+
+    return res.redirect(
+      `${this.configService.get('FRONTEND_URL')}/auth/callback?token=${result.access_token}`
+    );
+  } catch (error) {
+    return res.redirect(
+      `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+    );
+  }
+}
+
+
 
 }
 
