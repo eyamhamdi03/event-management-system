@@ -80,14 +80,16 @@ npm install --save @nestjs/typeorm typeorm mysql
 npm install class-transformer
 npm i @ngneat/falso
 npm install -D ts-node
+npm install passport-google-oauth20 passport-facebook
+npm install @types/passport-google-oauth20 @types/passport-facebook
 
 
 
 ```
 
-3. ## Environment Configuration
+3.  Environment Configuration
 
-1. Create a `.env` file in the root directory with these variables:
+ Create a `.env` file in the root directory with these variables:
 
 ```plaintext
 # Application
