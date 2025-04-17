@@ -1,5 +1,8 @@
-import {IsEmail,IsNotEmpty,IsString,IsDate,IsPhoneNumber,IsOptional,IsIn,} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsDate, IsPhoneNumber, IsOptional, IsIn, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Role } from '../../auth/roles.enum';
+import{SocialProvider} from '../../auth/socialProviders.enum'
+
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -14,19 +17,30 @@ export class CreateUserDto {
   @IsString()
   password: string;
 
-  @IsNotEmpty()
-  @IsPhoneNumber()
-  phone: string;
+  @IsOptional()
+  phone?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
-  birthDate: Date;
+  birthDate?: Date;
 
   @IsOptional()
-  @IsIn(['user', 'admin'])
-  role?: 'user' | 'admin';
+  @IsIn(Object.values(Role))
+  role?: Role;
 
   @IsOptional()
-  avatar?: string; 
+  @IsString()
+  salt?: string;
+
+  @IsOptional()
+  emailVerified?: boolean;
+
+  @IsOptional()
+  @IsIn(Object.values(SocialProvider))
+  provider?: SocialProvider;
+
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 }

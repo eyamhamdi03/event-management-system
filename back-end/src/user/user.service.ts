@@ -3,6 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {Role} from 'src/auth/roles.enum';
 import { NotFoundException, BadRequestException, Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { DeleteUserDto } from './dto/delete-user.dto';
+import { Like } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import{SocialProvider} from '../auth/socialProviders.enum'
 @Injectable()
 export class UserService {
 
@@ -11,46 +17,27 @@ export class UserService {
     private UserRepository: Repository<User>,
   ) {}
 
-  createUser({
-    fullName,
-    email,
-    password,
-    salt,
-    role,
-    phone,
-    birthDate,
-    emailVerified,
-    provider,
-    avatar,
-  }: {
-    fullName: string;
-    email: string;
-    password: string;
-    salt: string;
-    role: Role;
-    phone: number;
-    birthDate: Date;
-    emailVerified: boolean;
-    provider : string;
-    avatar : string;
-  }): Promise<User> {
-    const user = this.UserRepository.create({
-      fullName,
-      email,
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const salt = createUserDto.salt || await bcrypt.genSalt();
+    const password = createUserDto.salt 
+      ? createUserDto.password 
+      : await bcrypt.hash(createUserDto.password, salt);
+  
+    const userPartial: Partial<User> = {
+      ...createUserDto,
       password,
       salt,
-      role,
-      phone,
-      birthDate,
-      emailVerified,
-      provider,
-      avatar,
-    });
-    return this.UserRepository.save(user);
-  }
-
-  async getUsers(): Promise<User[]> {
-    return await this.UserRepository.find();
+      role: createUserDto.role || Role.User,
+      phone: createUserDto.phone || 0,
+      birthDate: createUserDto.birthDate || new Date(),
+      emailVerified: createUserDto.emailVerified || false,
+      provider: createUserDto.provider || SocialProvider.Local,
+      avatar: createUserDto.avatar || ""
+    };
+  
+    // Create and save with proper typing
+    const user = this.UserRepository.create(userPartial);
+    return await this.UserRepository.save(user);
   }
 
   findByfullName(fullName: string): Promise<User | null> {
@@ -67,7 +54,7 @@ export class UserService {
 
   }
 
-  async findById(id: string): Promise<User | null> {
+ async findOne(id: string): Promise<User | null> {
     return this.UserRepository.findOne({ where: { id } });
   }
 
@@ -124,6 +111,62 @@ export class UserService {
   
     return { message: 'User deleted successfully' };
   }
+
+
+  async remove(id: string): Promise<{ message: string }> {
+    const result = await this.UserRepository.softDelete(id);
+    
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    
+    return { message: 'User soft deleted successfully' };
+  }
+
+  async restore(id: string): Promise<{ message: string }> {
+    const result = await this.UserRepository.restore(id);
+    
+    if (result.affected === 0) {
+      throw new NotFoundException(`User with ID ${id} not found or not deleted`);
+    }
+    
+    return { message: 'User restored successfully' };
+  }
+
+
+  async findAll(): Promise<User[]> {
+    return this.UserRepository.find();
+  }
+
+  async findById(id: string): Promise<User> {
+    const user = await this.UserRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findById(id);
+    
+    if (updateUserDto.password) {
+      const salt = await bcrypt.genSalt();
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+      updateUserDto.salt = salt;
+    }
+    
+    Object.assign(user, updateUserDto);
+    return this.UserRepository.save(user);
+  }
+
+  async searchUsers(email?: string, fullName?: string): Promise<User[]> {
+    const where: any = {};
+    if (email) where.email = Like(`%${email}%`);
+    if (fullName) where.fullName = Like(`%${fullName}%`);
+    
+    return this.UserRepository.find({ where });
+  }
+
 }
   
 
