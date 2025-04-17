@@ -13,11 +13,6 @@ import { User } from 'src/user/entities/user.entity';
 import { SocialProvider } from './socialProviders.enum';
 import { SocialUserDto } from './dto/social-user.dto';
 import { AuthResultDto } from './dto/auth-result.dto';  
-import { UserResponseDto } from './dto/user-response.dto';
-import { JwtPayloadDto } from './dto/jwt-payload.dto';
-import { TokenResponseDto } from './dto/token-response.dto';
-
-
 
 @Injectable()
 export class AuthService {
@@ -49,7 +44,7 @@ export class AuthService {
         phone: dto.phone,
         birthDate: dto.birthDate,
         emailVerified: false,
-        provider: 'local',
+        provider: SocialProvider.Local,
         avatar: dto.avatar || '',
       });
 
@@ -227,7 +222,7 @@ export class AuthService {
       birthDate: new Date(), 
       phone: 0, 
       emailVerified: true,
-      provider: user.provider,
+      provider: SocialProvider.Local,
       avatar: user.picture || "", 
     });
   }
