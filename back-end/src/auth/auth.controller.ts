@@ -11,6 +11,8 @@ import { Public } from '../auth/decorators/public.decorator';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
+
 
 @Controller('auth')
 export class AuthController {
@@ -29,19 +31,6 @@ export class AuthController {
   @Public()
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
-  }
-
-  @Get('admin')
-  @Roles(Role.Admin)
-  @UseGuards(JwtAuthGuard)
-  testAuth() {
-    return "access is granted: admin"
-  }
-
-  @Get('auth')
-  @UseGuards(JwtAuthGuard)
-  test() {
-    return "access is granted"
   }
 
   @Post('forgot-password')
@@ -79,41 +68,46 @@ export class AuthController {
     // Initiates the Google OAuth flow
   }
 
+
   @Get('google/callback')
   @Public()
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: Request, @Res() res: any) {
-    if (!req.user) {
-      return res.redirect(`${this.configService.get('FRONTEND_URL')}/login?error=social_auth_failed`);
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    try {
+      const { redirectUrl } = await this.authService.handleGoogleAuthCallback(req as any);
+      return res.redirect(redirectUrl);
+    } catch (error) {
+      return res.redirect(
+        `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+      );
     }
-
-  const SocialUserDto = req.user as {
-    email: string;
-    firstName: string;
-    lastName: string;
-    provider: string;
-    accessToken: string;
-  };
-
-  try {
-    const result = await this.authService.validateSocialUser({
-      email: SocialUserDto.email,
-      firstName: SocialUserDto.firstName,
-      lastName: SocialUserDto.lastName,
-      provider: "google",
-    });
-
-    return res.redirect(
-      `${this.configService.get('FRONTEND_URL')}/auth/callback?token=${result.access_token}`
-    );
-  } catch (error) {
-    return res.redirect(
-      `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
-    );
   }
+  @Post('resend-verification')
+  @Public()
+  async resendVerification(@Body() body: { email: string }) {
+    return this.authService.resendVerificationEmail(body.email);
+  }
+
+  @Post('refresh-token')
+@Public()
+async refreshToken(@Body() body: { refreshToken: string }) {
+  return this.authService.refreshTokens(body.refreshToken);
 }
+  
+  @Get('admin')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  testAuth() {
+    return "access is granted: admin"
+  }
 
-
-
+  @Get('auth')
+  @UseGuards(JwtAuthGuard)
+  test() {
+    return "access is granted"
+  }
 }
 

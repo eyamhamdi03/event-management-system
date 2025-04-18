@@ -195,7 +195,7 @@ export class AuthService {
 
   }
 
-
+z
   async validateSocialUser(user: SocialUserDto): Promise<AuthResultDto> {
     // Normalize email to lowercase to avoid case sensitivity issues
     const normalizedEmail = user.email.toLowerCase();
@@ -259,7 +259,100 @@ export class AuthService {
     return `${frontendUrl}/auth/callback?token=${result.access_token}`;
   }
 
+  async handleGoogleAuthCallback(req: Request): Promise<{ redirectUrl: string }> {
+    const user = (req as any).user as SocialUserDto;
+    if (!user) {
+      return {
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=social_auth_failed`
+      };
+    }
+
+    try {
+      const result = await this.validateSocialUser({
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        picture: user.picture,
+        provider: SocialProvider.Google,
+      });
+
+      return {
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/auth/callback?token=${result.access_token}`
+      };
+    } catch (error) {
+      return {
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+      };
+    }
 }
+
+async refreshTokens(refreshToken: string) {
+  try {
+    const payload = this.jwtService.verify(refreshToken, {
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+    });
+
+    const user = await this.usersService.findById(payload.sub);
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!isValid) {
+      throw new UnauthorizedException('Refresh token mismatch');
+    }
+
+    const newPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role
+    };
+
+    const newAccessToken = this.jwtService.sign(newPayload);
+    const newRefreshToken = this.jwtService.sign(newPayload, {
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
+
+    await this.usersService.updateRefreshToken(
+      user.id, 
+      await bcrypt.hash(newRefreshToken, 10)
+    );
+
+    return {
+      access_token: newAccessToken,
+      refresh_token: newRefreshToken
+    };
+  } catch (e) {
+    throw new UnauthorizedException('Invalid refresh token');
+  }
+}
+
+async resendVerificationEmail(email: string) {
+  const user = await this.usersService.findByEmail(email);
+  if (!user) return; // Don't reveal if user exists
+
+  if (user.emailVerified) {
+    throw new BadRequestException('Email already verified');
+  }
+
+  const token = this.jwtService.sign(
+    { userId: user.id },
+    { secret: this.configService.get('JWT_VERIFY_SECRET'), expiresIn: '1d' }
+  );
+
+  await this.usersService.updateEmailVerificationToken(user.id, token);
+  await this.mailService.sendVerificationEmail(
+    user.email,
+    user.fullName,
+    `${this.configService.get('FRONTEND_URL')}/verify-email?token=${token}`
+  );
+
+  return { message: 'Verification email resent if account exists' };
+}
+  }
+
+
 
   
 
