@@ -1,14 +1,19 @@
-import {Body,Controller,Delete,Get,Param,Patch,Post,Put,} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,Patch,Post,Put, Query,} from '@nestjs/common';
 import { Event } from './entities/event.entity';
 import { UseGuards } from '@nestjs/common';
 import { EventService } from './event.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum'; 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { FilterEventsDto } from './dto/filter-events.dto';
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
-
+ //Get Filter//
+ @Get('/withFilter')
+ async getFilteredEvents(@Query() filter: FilterEventsDto) {
+   return this.eventService.findAllFiltered(filter);
+ }
   @Get()
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -18,9 +23,10 @@ export class EventController {
 
   @Get(':id')
   async getEventById(@Param('id') id: string): Promise<Event> {
+
     return await this.eventService.getEventById(id);
   }
-
+ 
   @Post()
   async createEvent(@Body() event: Event): Promise<Event> {
     return await this.eventService.createEvent(event);
