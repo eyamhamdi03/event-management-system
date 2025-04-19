@@ -12,9 +12,11 @@ import { Registration } from './registration/entities/registration.entity';
 import { CategoryModule } from './category/category.module';
 import * as dotenv from 'dotenv';
 import { Category } from './category/entities/category.entity';
+import { ConfigModule } from '@nestjs/config';
 dotenv.config();
 @Module({
   imports: [
+
     AuthModule,
     UserModule,
     EventModule,
@@ -24,7 +26,7 @@ dotenv.config();
       type: 'mysql',
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT || '3306'),
-      username: process.env.DB_USERNAME,
+      username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [User, Event, Registration, Category],
