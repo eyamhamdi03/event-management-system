@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get,Req,Query ,UseGuards, Res } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, Query, UseGuards, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -12,33 +12,40 @@ import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
-
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
+@SkipThrottle() // Skip rate limiting by default for all endpoints
 export class AuthController {
   constructor(
     private authService: AuthService,    
     private configService: ConfigService 
   ) {}
 
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Post('register')
   @Public() 
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests per minute
   @Post('login')
   @Public()
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
+  @Throttle({ default: { limit: 3, ttl: 3600 } }) // 3 requests per hour
   @Post('forgot-password')
+  @Public()
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests per minute
   @Post('reset-password')
+  @Public()
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
   }
@@ -52,14 +59,16 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Req() req: Request) {
-  const user = req.user as { sub: string }; 
-  return this.authService.logout(user.sub);}
+    const user = req.user as { sub: string }; 
+    return this.authService.logout(user.sub);
+  }
 
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Public()
   @Get('verify-email')
   async verifyEmail(@Query('token') token: string) {
-  return this.authService.verifyEmail(token);
-}
+    return this.authService.verifyEmail(token);
+  }
 
   @Get('google')
   @Public()
@@ -67,7 +76,6 @@ export class AuthController {
   async googleAuth() {
     // Initiates the Google OAuth flow
   }
-
 
   @Get('google/callback')
   @Public()
@@ -85,29 +93,43 @@ export class AuthController {
       );
     }
   }
+
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Post('resend-verification')
   @Public()
   async resendVerification(@Body() body: { email: string }) {
     return this.authService.resendVerificationEmail(body.email);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60 } }) // 10 requests per minute
   @Post('refresh-token')
-@Public()
-async refreshToken(@Body() body: { refreshToken: string }) {
-  return this.authService.refreshTokens(body.refreshToken);
-}
-  
+  @Public()
+  async refreshToken(
+    @Body() body: { refreshToken: string },
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const tokens = await this.authService.refreshTokens(body.refreshToken);
+    
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return { access_token: tokens.access_token };
+  }
+ 
   @Get('admin')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
   testAuth() {
-    return "access is granted: admin"
+    return "access is granted: admin";
   }
 
   @Get('auth')
   @UseGuards(JwtAuthGuard)
   test() {
-    return "access is granted"
+    return "access is granted";
   }
 }
-

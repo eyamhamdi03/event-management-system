@@ -12,7 +12,11 @@ import { Registration } from './registration/entities/registration.entity';
 import { CategoryModule } from './category/category.module';
 import * as dotenv from 'dotenv';
 import { Category } from './category/entities/category.entity';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+
 dotenv.config();
+
 @Module({
   imports: [
     AuthModule,
@@ -30,9 +34,18 @@ dotenv.config();
       entities: [User, Event, Registration, Category],
       synchronize: true,
     }),
-    CategoryModule,
+    ThrottlerModule.forRoot([{
+      ttl: 60, // 1 minute
+      limit: 10, // Max 10 requests per minute
+    }]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

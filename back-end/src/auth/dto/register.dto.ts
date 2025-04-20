@@ -1,4 +1,4 @@
-import { IsDate, IsEmail, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsEmail, IsNumber, IsString, IsStrongPassword } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class RegisterDto {
@@ -8,7 +8,7 @@ export class RegisterDto {
   @IsEmail()
   email: string;
 
-  @IsString()
+ @IsStrongPassword()
   password: string;
 
   @IsNumber()
