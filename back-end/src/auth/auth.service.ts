@@ -160,12 +160,6 @@ export class AuthService {
       throw new BadRequestException('Invalid reset token');
     }
   }
-
-  async logout(userId: string) {
-    await this.usersService.updateRefreshToken(userId, "");
-    return { message: 'Logged out successfully' };
-
-  }
   
   async verifyEmail(token: string) {
 
@@ -194,7 +188,6 @@ export class AuthService {
     }
 
   }
-
 
   async validateSocialUser(user: SocialUserDto): Promise<AuthResultDto> {
     // Normalize email to lowercase to avoid case sensitivity issues
@@ -259,7 +252,134 @@ export class AuthService {
     return `${frontendUrl}/auth/callback?token=${result.access_token}`;
   }
 
+  async handleGoogleAuthCallback(req: Request): Promise<{ redirectUrl: string }> {
+    const user = (req as any).user as SocialUserDto;
+    if (!user) {
+      return {
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=social_auth_failed`
+      };
+    }
+
+    try {
+      const result = await this.validateSocialUser({
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        picture: user.picture,
+        provider: SocialProvider.Google,
+      });
+
+      return {
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/auth/callback?token=${result.access_token}`
+      };
+    } catch (error) {
+      return {
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+      };
+    }
 }
+
+  async refreshTokens(refreshToken: string) {
+    if (this.isTokenRevoked(refreshToken)) {
+      throw new UnauthorizedException('Token revoked');
+    }
+    try {
+      // Verify and decode the refresh token
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
+
+      // Get user and validate
+      const user = await this.usersService.findById(payload.sub);
+      if (!user || !user.refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // Validate against stored hash
+      const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isValid) {
+        throw new UnauthorizedException('Refresh token mismatch');
+      }
+
+      // ====== NEW: ROTATION LOGIC ======
+      // 1. Invalidate old token FIRST
+      await this.usersService.updateRefreshToken(user.id, "");
+      
+      // 2. Generate new tokens
+      const newPayload = { sub: user.id, email: user.email, role: user.role };
+      
+      const newAccessToken = this.jwtService.sign(newPayload, { expiresIn: '15m' });
+      
+      const newRefreshToken = this.jwtService.sign(newPayload, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        expiresIn: '7d',
+      });
+
+      // 3. Store new hashed refresh token
+      await this.usersService.updateRefreshToken(
+        user.id,
+        await bcrypt.hash(newRefreshToken, 10)
+      );
+
+      return {
+        access_token: newAccessToken,
+        refresh_token: newRefreshToken,
+      };
+    } catch (e) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  // Add to AuthService
+  private revokedTokens = new Map<string, number>(); // token -> expiry timestamp
+
+  // Add this method
+  private isTokenRevoked(token: string): boolean {
+    const expiry = this.revokedTokens.get(token);
+    if (!expiry) return false;
+    
+    if (Date.now() > expiry) {
+      this.revokedTokens.delete(token); 
+      return false;
+    }
+    return true;
+  }
+
+  async logout(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (user?.refreshToken) {
+      // Add to blacklist for 5 minutes
+      this.revokedTokens.set(user.refreshToken, Date.now() + 5 * 60 * 1000);
+    }
+    await this.usersService.updateRefreshToken(userId, "");
+    return { message: 'Logged out successfully' };
+  }
+
+  async resendVerificationEmail(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) return; // Don't reveal if user exists
+
+    if (user.emailVerified) {
+      throw new BadRequestException('Email already verified');
+    }
+
+    const token = this.jwtService.sign(
+      { userId: user.id },
+      { secret: this.configService.get('JWT_VERIFY_SECRET'), expiresIn: '1d' }
+    );
+
+    await this.usersService.updateEmailVerificationToken(user.id, token);
+    await this.mailService.sendVerificationEmail(
+      user.email,
+      user.fullName,
+      `${this.configService.get('FRONTEND_URL')}/verify-email?token=${token}`
+    );
+
+    return { message: 'Verification email resent if account exists' };
+  }
+  }
+
+
 
   
 

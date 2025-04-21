@@ -79,4 +79,6 @@ export class User extends TimestampEntities {
     default: SocialProvider.Local
     })
     provider: string;
+
+
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get,Req,Query ,UseGuards, Res } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, Query, UseGuards, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -11,45 +11,41 @@ import { Public } from '../auth/decorators/public.decorator';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
+@SkipThrottle() // Skip rate limiting by default for all endpoints
 export class AuthController {
   constructor(
     private authService: AuthService,    
     private configService: ConfigService 
   ) {}
 
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Post('register')
   @Public() 
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests per minute
   @Post('login')
   @Public()
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
   }
 
-  @Get('admin')
-  @Roles(Role.Admin)
-  @UseGuards(JwtAuthGuard)
-  testAuth() {
-    return "access is granted: admin"
-  }
-
-  @Get('auth')
-  @UseGuards(JwtAuthGuard)
-  test() {
-    return "access is granted"
-  }
-
+  @Throttle({ default: { limit: 3, ttl: 3600 } }) // 3 requests per hour
   @Post('forgot-password')
+  @Public()
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests per minute
   @Post('reset-password')
+  @Public()
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetPasswordDto);
   }
@@ -63,14 +59,16 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Req() req: Request) {
-  const user = req.user as { sub: string }; 
-  return this.authService.logout(user.sub);}
+    const user = req.user as { sub: string }; 
+    return this.authService.logout(user.sub);
+  }
 
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Public()
   @Get('verify-email')
   async verifyEmail(@Query('token') token: string) {
-  return this.authService.verifyEmail(token);
-}
+    return this.authService.verifyEmail(token);
+  }
 
   @Get('google')
   @Public()
@@ -82,38 +80,56 @@ export class AuthController {
   @Get('google/callback')
   @Public()
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: Request, @Res() res: any) {
-    if (!req.user) {
-      return res.redirect(`${this.configService.get('FRONTEND_URL')}/login?error=social_auth_failed`);
+  async googleAuthRedirect(
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    try {
+      const { redirectUrl } = await this.authService.handleGoogleAuthCallback(req as any);
+      return res.redirect(redirectUrl);
+    } catch (error) {
+      return res.redirect(
+        `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+      );
     }
+  }
 
-  const SocialUserDto = req.user as {
-    email: string;
-    firstName: string;
-    lastName: string;
-    provider: string;
-    accessToken: string;
-  };
+  @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
+  @Post('resend-verification')
+  @Public()
+  async resendVerification(@Body() body: { email: string }) {
+    return this.authService.resendVerificationEmail(body.email);
+  }
 
-  try {
-    const result = await this.authService.validateSocialUser({
-      email: SocialUserDto.email,
-      firstName: SocialUserDto.firstName,
-      lastName: SocialUserDto.lastName,
-      provider: "google",
+  @Throttle({ default: { limit: 10, ttl: 60 } }) // 10 requests per minute
+  @Post('refresh-token')
+  @Public()
+  async refreshToken(
+    @Body() body: { refreshToken: string },
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const tokens = await this.authService.refreshTokens(body.refreshToken);
+    
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      secure: this.configService.get('NODE_ENV') === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    return res.redirect(
-      `${this.configService.get('FRONTEND_URL')}/auth/callback?token=${result.access_token}`
-    );
-  } catch (error) {
-    return res.redirect(
-      `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
-    );
+    return { access_token: tokens.access_token };
+  }
+ 
+  @Get('admin')
+  @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard)
+  testAuth() {
+    return "access is granted: admin";
+  }
+
+  @Get('auth')
+  @UseGuards(JwtAuthGuard)
+  test() {
+    return "access is granted";
   }
 }
-
-
-
-}
-

@@ -2,7 +2,7 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {Role} from 'src/auth/roles.enum';
-import { NotFoundException, BadRequestException, Injectable } from '@nestjs/common';
+import { NotFoundException, BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
@@ -166,6 +166,46 @@ export class UserService {
     
     return this.UserRepository.find({ where });
   }
+
+  async getUserProfile(id: string, requestingUser: { sub: string; role: Role }): Promise<Partial<User>> {
+    this.validateUserAccess(id, requestingUser);
+    const user = await this.UserRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return this.sanitizeUser(user);
+  }
+
+  async updateUserProfile(id: string, updateUserDto: UpdateUserDto, requestingUser: { sub: string; role: Role }): Promise<Partial<User>> {
+    this.validateUserAccess(id, requestingUser);
+    
+    const user = await this.UserRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    if (updateUserDto.password) {
+      const salt = await bcrypt.genSalt();
+      user.password = await bcrypt.hash(updateUserDto.password, salt);
+      user.salt = salt;
+    }
+
+    Object.assign(user, updateUserDto);
+    const updatedUser = await this.UserRepository.save(user);
+    return this.sanitizeUser(updatedUser);
+  }
+
+  private validateUserAccess(targetUserId: string, requestingUser: { sub: string; role: Role }): void {
+    if (requestingUser.role !== Role.Admin && requestingUser.sub !== targetUserId) {
+      throw new UnauthorizedException('You can only access your own profile');
+    }
+  }
+
+  private sanitizeUser(user: User): Partial<User> {
+    const { password, salt, refreshToken, ...sanitizedUser } = user;
+    return sanitizedUser;
+  }
+
 
 }
   
