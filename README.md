@@ -104,11 +104,13 @@ DB_PASSWORD=your_db_password
 DB_NAME=event_management_db
 
 # Authentication
-JWT_SECRET=your_jwt_secret_here
-JWT_REFRESH_SECRET=your_refresh_secret_here
+JWT_SECRET='mysecret'
 JWT_RESET_SECRET=your_reset_secret_here
-JWT_VERIFY_SECRET=your_verify_secret_here
-JWT_EXPIRATION=3600 # 1 hour in seconds
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+JWT_REFRESH_SECRET=your_strong_refresh_secret
+JWT_VERIFY_SECRET=your_very_strong_verify_token_secret
+
 
 # Email Service
 EMAIL_USER=your_email@gmail.com
