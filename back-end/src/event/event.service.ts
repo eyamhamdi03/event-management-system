@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
+import { FilterEventsDto } from './dto/filter-events.dto';
 
 @Injectable()
 export class EventService {
@@ -49,4 +50,70 @@ export class EventService {
       );
     }
   }
+
+  //////filter////
+  async findAllFiltered(filter: FilterEventsDto): Promise<{ data: Event[], total: number }> {
+    const {
+      category,
+      search,
+      date,
+      startDate,
+      endDate,
+      hostId,
+      upcoming,
+      page = '1',
+      limit = '10',
+    } = filter;
+
+    const query = this.EventRepository.createQueryBuilder('event')
+      .leftJoinAndSelect('event.host', 'host')
+      .leftJoinAndSelect('event.category', 'category')
+      .leftJoinAndSelect('event.registrations', 'registrations');
+
+    if (category) {
+      query.andWhere('category.name = :category', { category });
+    }
+
+    if (search) {
+      query.andWhere('(event.title ILIKE :search OR event.description ILIKE :search)', {
+        search: `%${search}%`,
+      });
+    }
+
+    if (date) {
+      query.andWhere('DATE(event.eventDate) = :date', { date });
+    }
+    
+    if (startDate && endDate) {
+      query.andWhere('event.eventDate BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      });
+    }
+    
+    if (upcoming === 'true') {
+      query.andWhere('event.eventDate >= :today', { today: new Date() });
+    }
+    
+   
+    
+
+    if (hostId) {
+      query.andWhere('host.id = :hostId', { hostId: parseInt(hostId) });
+    }
+
+    // Pagination
+    const take = parseInt(limit);
+    const skip = (parseInt(page) - 1) * take;
+
+    const [data, total] = await query
+      .take(take)
+      .skip(skip)
+      .orderBy('event.eventDate', 'ASC')
+      .getManyAndCount();
+
+    return { data, total };
+  }
 }
+  
+

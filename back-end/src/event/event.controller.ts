@@ -1,18 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+
 import { Event } from './entities/event.entity';
 import { EventService } from './event.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum'; 
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../auth/decorators/public.decorator';
+
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { FilterEventsDto } from './dto/filter-events.dto';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard) 
 @SkipThrottle() 
 export class EventController {
   constructor(private readonly eventService: EventService) {}
-
+ //Get Filter//
+ @Get('/withFilter')
+ async getFilteredEvents(@Query() filter: FilterEventsDto) {
+   return this.eventService.findAllFiltered(filter);
+ }
   @Get()
   @Roles(Role.Admin)
   @Throttle({ default: { limit: 30, ttl: 60 } }) // 30 requests/min
@@ -24,9 +32,10 @@ export class EventController {
   @Public() 
   @Throttle({ default: { limit: 60, ttl: 60 } }) // 60 requests/min
   async getEventById(@Param('id') id: string): Promise<Event> {
+
     return await this.eventService.getEventById(id);
   }
-
+ 
   @Post()
   @Roles(Role.Admin, Role.Organizer) 
   @Throttle({ default: { limit: 10, ttl: 60 } }) // 10 requests/min
