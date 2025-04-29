@@ -7,8 +7,8 @@ import {
 } from 'typeorm';
 import { Registration } from '../../registration/entities/registration.entity';
 import { TimestampEntities } from 'src/generics/timestamp.entities';
-import { User } from 'src/user/entities/user.entity';
-import { Category } from 'src/category/entities/category.entity';
+import { User } from '../../user/entities/user.entity';
+import { Category } from '../../category/entities/category.entity';
 
 @Entity()
 export class Event extends TimestampEntities {

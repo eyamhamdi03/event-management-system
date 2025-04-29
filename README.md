@@ -82,7 +82,7 @@ npm i @ngneat/falso
 npm install -D ts-node
 npm install passport-google-oauth20 passport-facebook
 npm install @types/passport-google-oauth20 @types/passport-facebook
-
+npm install falso
 
 
 ```
