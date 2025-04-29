@@ -8,7 +8,7 @@ export class RegisterDto {
   @IsEmail()
   email: string;
 
- @IsStrongPassword()
+  @IsStrongPassword()
   password: string;
 
   @IsNumber()
@@ -17,7 +17,4 @@ export class RegisterDto {
   @IsDate()
   @Transform(({ value }) => new Date(value))
   birthDate: Date;
-
-  @IsString()
-  avatar: string;
 }

@@ -1,0 +1,117 @@
+.landing-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-container::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(107, 70, 193, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(159, 122, 234, 0.15) 0%, transparent 50%);
+  animation: rotate 20s linear infinite;
+  top: -50%;
+  left: -50%;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.landing-content {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 3rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+              0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.landing-content h1 {
+  color: #2D3748;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.landing-content p {
+  color: #4A5568;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.landing-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.landing-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.landing-button.primary {
+  background: linear-gradient(135deg, #6B46C1 0%, #9F7AEA 100%);
+  color: white;
+}
+
+.landing-button.secondary {
+  background: white;
+  color: #6B46C1;
+  border: 2px solid #6B46C1;
+}
+
+.landing-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(107, 70, 193, 0.4);
+}
+
+.landing-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .landing-content {
+    padding: 2rem;
+  }
+
+  .landing-content h1 {
+    font-size: 2rem;
+  }
+
+  .landing-content p {
+    font-size: 1rem;
+  }
+
+  .landing-buttons {
+    flex-direction: column;
+  }
+
+  .landing-button {
+    width: 100%;
+  }
+} 

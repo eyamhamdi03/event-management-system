@@ -18,26 +18,49 @@ export class UserService {
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
-    const salt = createUserDto.salt || await bcrypt.genSalt();
-    const password = createUserDto.salt 
-      ? createUserDto.password 
-      : await bcrypt.hash(createUserDto.password, salt);
+    try {
+      console.log('=== Create User ===');
+      console.log('Input data:', JSON.stringify(createUserDto, null, 2));
+      
+      // For social login users, we don't need to hash the password
+      const salt = createUserDto.provider === SocialProvider.Google ? 
+        "" : 
+        (createUserDto.salt || await bcrypt.genSalt());
+      
+      const password = createUserDto.provider === SocialProvider.Google ?
+        "" :
+        (createUserDto.salt ? createUserDto.password : await bcrypt.hash(createUserDto.password, salt));
   
-    const userPartial: Partial<User> = {
-      ...createUserDto,
-      password,
-      salt,
-      role: createUserDto.role || Role.User,
-      phone: createUserDto.phone || 0,
-      birthDate: createUserDto.birthDate || new Date(),
-      emailVerified: createUserDto.emailVerified || false,
-      provider: createUserDto.provider || SocialProvider.Local,
-      avatar: createUserDto.avatar || ""
-    };
+      const userPartial: Partial<User> = {
+        ...createUserDto,
+        password,
+        salt,
+        role: createUserDto.role || Role.User,
+        phone: createUserDto.phone || 0,
+        birthDate: createUserDto.birthDate || new Date(),
+        emailVerified: createUserDto.emailVerified || false,
+        provider: createUserDto.provider || SocialProvider.Local,
+        avatar: createUserDto.avatar || ""
+      };
   
-    // Create and save with proper typing
-    const user = this.UserRepository.create(userPartial);
-    return await this.UserRepository.save(user);
+      console.log('Final user data to save:', JSON.stringify(userPartial, null, 2));
+      
+      // Create and save with proper typing
+      const user = this.UserRepository.create(userPartial);
+      console.log('Created user entity:', JSON.stringify(user, null, 2));
+      
+      const savedUser = await this.UserRepository.save(user);
+      console.log('Successfully saved user:', JSON.stringify(savedUser, null, 2));
+      
+      return savedUser;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      console.error('Error stack:', error.stack);
+      if (error.code === '23505') { // PostgreSQL unique violation
+        throw new Error('A user with this email already exists');
+      }
+      throw error;
+    }
   }
 
   findByfullName(fullName: string): Promise<User | null> {

@@ -73,8 +73,9 @@ export class AuthController {
   @Get('google')
   @Public()
   @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    // Initiates the Google OAuth flow
+  async googleAuth(@Query('callbackUrl') callbackUrl: string) {
+    console.log('Starting Google auth flow with callback URL:', callbackUrl);
+    return { message: 'Redirecting to Google...' };
   }
 
   @Get('google/callback')
@@ -82,14 +83,29 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(
     @Req() req: Request,
-    @Res() res: Response
+    @Res() res: Response,
+    @Query('callbackUrl') callbackUrl: string
   ) {
     try {
+      console.log('Google callback received. User data:', req.user);
+      console.log('Callback URL:', callbackUrl);
+      
+      if (!req.user) {
+        console.error('No user data received from Google');
+        return res.redirect(
+          `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed&message=No user data received`
+        );
+      }
+
       const { redirectUrl } = await this.authService.handleGoogleAuthCallback(req as any);
+      console.log('Redirecting to:', redirectUrl);
+      
       return res.redirect(redirectUrl);
     } catch (error) {
+      console.error('Google auth error:', error);
+      console.error('Error stack:', error.stack);
       return res.redirect(
-        `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+        `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed&message=${encodeURIComponent(error.message)}`
       );
     }
   }

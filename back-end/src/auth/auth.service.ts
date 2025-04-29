@@ -40,12 +40,11 @@ export class AuthService {
         email,
         password: hashedPassword,
         salt: salt,
-        role: Role.User ,
+        role: Role.User,
         phone: dto.phone,
         birthDate: dto.birthDate,
         emailVerified: false,
-        provider: SocialProvider.Local,
-        avatar: dto.avatar || '',
+        provider: SocialProvider.Local
       });
 
       const emailVerificationToken = this.jwtService.sign(
@@ -68,21 +67,30 @@ export class AuthService {
   }
 
   async login(credentials: LoginDto) {
-    const { fullName, password } = credentials;
+    const { email, password } = credentials;
 
-    const user = await this.usersService.findByfullName(credentials.fullName);
-    if (!user) throw new NotFoundException('Invalid credentials');
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
-    const isValid = await bcrypt.compare(credentials.password, user.password);
-    if (!isValid) throw new UnauthorizedException('Invalid credentials');
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
     const payload = { 
-        sub: user.id,  
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role};
+      sub: user.id,  
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role
+    };
 
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const accessToken = this.jwtService.sign(payload, { 
+      expiresIn: '15m',
+      secret: this.configService.get('JWT_SECRET')
+    });
+    
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
@@ -118,7 +126,8 @@ export class AuthService {
     await this.usersService.setPasswordResetToken(user.id, resetToken);
 
     // Send email with reset link
-    const resetUrl = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${resetToken}`;
+    const frontendUrl = this.configService.get('FRONTEND_URL');
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
     
     await this.mailService.sendPasswordResetEmail(
       user.email,
@@ -190,34 +199,64 @@ export class AuthService {
   }
 
   async validateSocialUser(user: SocialUserDto): Promise<AuthResultDto> {
+    console.log('=== Validate Social User ===');
+    console.log('User data:', JSON.stringify(user, null, 2));
+    
     // Normalize email to lowercase to avoid case sensitivity issues
     const normalizedEmail = user.email.toLowerCase();
     
     // Check if user exists
     let existingUser = await this.usersService.findByEmail(normalizedEmail);
+    console.log('Existing user found:', existingUser ? JSON.stringify(existingUser, null, 2) : 'No existing user');
     
     if (!existingUser) {
-      existingUser = await this.createSocialUser(user);
+      console.log('Creating new social user...');
+      try {
+        existingUser = await this.createSocialUser(user);
+        console.log('New user created:', JSON.stringify(existingUser, null, 2));
+      } catch (error) {
+        console.error('Error creating social user:', error);
+        console.error('Error stack:', error.stack);
+        throw error;
+      }
     }
 
-    return this.generateAuthTokens(existingUser);
+    console.log('Generating auth tokens...');
+    const tokens = this.generateAuthTokens(existingUser);
+    console.log('Tokens generated successfully');
+    return tokens;
   }
 
   private async createSocialUser(user: SocialUserDto) {
+    console.log('=== Create Social User ===');
     const fullName = `${user.firstName} ${user.lastName}`.trim();
-    
-    return this.usersService.createUser({
+    console.log('Creating user with data:', {
       fullName,
-      email: user.email.toLowerCase(),
-      password: "", 
-      salt: "",
-      role: Role.User,
-      birthDate: new Date(), 
-      phone: 0, 
-      emailVerified: true,
-      provider: SocialProvider.Local,
-      avatar: user.picture || "", 
+      email: user.email,
+      provider: SocialProvider.Google
     });
+    
+    try {
+      const newUser = await this.usersService.createUser({
+        fullName,
+        email: user.email.toLowerCase(),
+        password: "", // Empty password for social login
+        salt: "", // Empty salt for social login
+        role: Role.User,
+        birthDate: new Date(), 
+        phone: 0, 
+        emailVerified: true,
+        provider: SocialProvider.Google,
+        avatar: user.picture || "", 
+      });
+
+      console.log('Successfully created new social user:', JSON.stringify(newUser, null, 2));
+      return newUser;
+    } catch (error) {
+      console.error('Error creating social user:', error);
+      console.error('Error stack:', error.stack);
+      throw new Error(`Failed to create social user: ${error.message}`);
+    }
   }
 
   private generateAuthTokens(user: User): AuthResultDto {
@@ -228,9 +267,20 @@ export class AuthService {
       role: user.role,
     };
 
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_SECRET'),
+      expiresIn: '15m'
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      expiresIn: '7d'
+    });
+
     return {
-      access_token: this.jwtService.sign(payload),
-      user,
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      user
     };
   }
 
@@ -253,14 +303,19 @@ export class AuthService {
   }
 
   async handleGoogleAuthCallback(req: Request): Promise<{ redirectUrl: string }> {
+    console.log('=== Handle Google Auth Callback ===');
     const user = (req as any).user as SocialUserDto;
+    console.log('User data from request:', JSON.stringify(user, null, 2));
+
     if (!user) {
+      console.error('No user data received from Google');
       return {
         redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=social_auth_failed`
       };
     }
 
     try {
+      console.log('Validating social user...');
       const result = await this.validateSocialUser({
         email: user.email,
         firstName: user.firstName,
@@ -269,15 +324,19 @@ export class AuthService {
         provider: SocialProvider.Google,
       });
 
+      console.log('Auth result:', JSON.stringify(result, null, 2));
+
       return {
         redirectUrl: `${this.configService.get('FRONTEND_URL')}/auth/callback?token=${result.access_token}`
       };
     } catch (error) {
+      console.error('Error in handleGoogleAuthCallback:', error);
+      console.error('Error stack:', error.stack);
       return {
-        redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed`
+        redirectUrl: `${this.configService.get('FRONTEND_URL')}/login?error=auth_failed&message=${encodeURIComponent(error.message)}`
       };
     }
-}
+  }
 
   async refreshTokens(refreshToken: string) {
     if (this.isTokenRevoked(refreshToken)) {

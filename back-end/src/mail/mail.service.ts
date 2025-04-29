@@ -36,7 +36,7 @@ export class MailService {
             </a>
           </div>
           <p style="font-size: 14px; color: #888888;">
-            If you didn’t request a password reset, you can safely ignore this email. Your password will remain unchanged.
+            If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.
           </p>
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
           <p style="font-size: 12px; color: #999999; text-align: center;">
@@ -65,7 +65,7 @@ export class MailService {
               Verify Email
             </a>
           </div>
-          <p style="font-size: 14px; color: #888888;">If you didn’t create this account, you can safely ignore this email.</p>
+          <p style="font-size: 14px; color: #888888;">If you didn't create this account, you can safely ignore this email.</p>
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
           <p style="font-size: 12px; color: #999999; text-align: center;">This link will expire in 24 hours.</p>
         </div>
