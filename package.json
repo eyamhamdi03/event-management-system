@@ -12,6 +12,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.5.0",
+    "graphql": "^16.11.0",
+    "graphql-yoga": "^5.13.4",
     "mysql": "^2.18.1",
     "nodemailer": "^6.10.1",
     "passport": "^0.7.0",
