@@ -22,7 +22,7 @@ export class EventController {
    return this.eventService.findAllFiltered(filter);
  }
   @Get()
-  @Roles(Role.Admin)
+  @Roles(Role.Organizer)
   @Throttle({ default: { limit: 30, ttl: 60 } }) // 30 requests/min
   async getEvents(): Promise<Event[]> {
     return await this.eventService.getEvents();

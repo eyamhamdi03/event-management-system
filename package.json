@@ -3,6 +3,7 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
+    "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "@ngneat/falso": "^7.3.0",
     "@types/jsonwebtoken": "^9.0.9",

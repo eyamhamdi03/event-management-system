@@ -91,10 +91,16 @@ export class AuthService {
     const hashedToken = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(user.id, hashedToken);
     
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+      return {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    user: {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    },
+  };
   }
 
   async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {

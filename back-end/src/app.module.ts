@@ -13,7 +13,7 @@ import { CategoryModule } from './category/category.module';
 import * as dotenv from 'dotenv';
 import { Category } from './category/entities/category.entity';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, Reflector } from '@nestjs/core';
 
 import { ConfigModule } from '@nestjs/config';
 dotenv.config();
@@ -44,6 +44,8 @@ dotenv.config();
   controllers: [AppController],
   providers: [
     AppService,
+        Reflector,
+
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
