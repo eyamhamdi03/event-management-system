@@ -10,12 +10,14 @@ import { User } from './user/entities/user.entity';
 import { Event } from './event/entities/event.entity';
 import { Registration } from './registration/entities/registration.entity';
 import { CategoryModule } from './category/category.module';
+import { ChatModule } from './chat/chat.module';
+import { Message } from './chat/entities/message.entity';
+import { MessageReaction } from './chat/entities/message-reaction.entity';
 import * as dotenv from 'dotenv';
 import { Category } from './category/entities/category.entity';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
-import { ConfigModule } from '@nestjs/config';
 dotenv.config();
 
 @Module({
@@ -26,14 +28,14 @@ dotenv.config();
     EventModule,
     CategoryModule,
     RegistrationModule,
-    TypeOrmModule.forRoot({
+    ChatModule, TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT || '3306'),
-      username: process.env.DB_USER,
+      username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, Event, Registration, Category],
+      entities: [User, Event, Registration, Category, Message, MessageReaction],
       synchronize: true,
     }),
     ThrottlerModule.forRoot([{
@@ -50,4 +52,4 @@ dotenv.config();
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
