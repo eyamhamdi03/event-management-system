@@ -6,10 +6,13 @@ import { Registration } from './entities/registration.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { User } from 'src/user/entities/user.entity';
 import { Event } from 'src/event/entities/event.entity';
-
-
+import { NotificationsModule } from 'src/notifications/notifications.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([Registration, User, Event]),AuthModule,],
+  imports: [
+    TypeOrmModule.forFeature([Registration, User, Event]),
+    AuthModule,
+    NotificationsModule,
+  ],
   controllers: [RegistrationController],
   providers: [RegistrationService],
 })

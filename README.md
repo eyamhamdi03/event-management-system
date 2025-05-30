@@ -63,28 +63,7 @@ cd back-end
 2. Install dependencies:
 
 ```bash
-
-npm i dotenv
 npm install
-npx husky-init && npm install
-npm install --save-dev lint-staged
-npm install @types/jsonwebtoken                                                                   
-npm install class-validator
-npm install @nestjs/passport passport passport-local
-npm install @nestjs/jwt passport-jwt
-npm install --save-dev @types/passport-jwt
-npm install @nestjs/config        
-npm install bcrypt  
-npm install nodemailer
-npm install --save @nestjs/typeorm typeorm mysql
-npm install class-transformer
-npm i @ngneat/falso
-npm install -D ts-node
-npm install passport-google-oauth20 passport-facebook
-npm install @types/passport-google-oauth20 @types/passport-facebook
-npm install falso
-
-
 ```
 
 3.  Environment Configuration

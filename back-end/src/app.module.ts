@@ -20,7 +20,6 @@ dotenv.config();
 
 @Module({
   imports: [
-
     AuthModule,
     UserModule,
     EventModule,
@@ -36,10 +35,16 @@ dotenv.config();
       entities: [User, Event, Registration, Category],
       synchronize: true,
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60, // 1 minute
-      limit: 10, // Max 10 requests per minute
-    }]),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60, // 1 minute
+        limit: 10, // Max 10 requests per minute
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [
