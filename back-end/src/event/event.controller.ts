@@ -10,6 +10,7 @@ import { Public } from '../auth/decorators/public.decorator';
 
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FilterEventsDto } from './dto/filter-events.dto';
+import { CreateEventDto } from './dto/create-event.dto';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard) 
@@ -39,8 +40,8 @@ export class EventController {
   @Post()
   @Roles(Role.Admin, Role.Organizer) 
   @Throttle({ default: { limit: 10, ttl: 60 } }) // 10 requests/min
-  async createEvent(@Body() event: Event): Promise<Event> {
-    return await this.eventService.createEvent(event);
+  async createEvent(@Body() eventDto: CreateEventDto): Promise<Event> {
+    return this.eventService.createEvent(eventDto);
   }
 
   @Put(':id')

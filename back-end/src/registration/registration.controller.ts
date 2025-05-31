@@ -18,11 +18,15 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum';
 import { RegistrationResponseDto } from './dto/registration-response.dto';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
+import { MailService } from 'src/mail/mail.service';
+
 import { Response } from 'express';
 @UseGuards(JwtAuthGuard)
 @Controller('registration')
 export class RegistrationController {
-  constructor(private readonly registrationService: RegistrationService) {}
+  constructor(private readonly registrationService: RegistrationService
+  , private readonly mailService: MailService
+  ) {}
 
   @Get('scan/:id')
   async scanRegistration(@Param('id') id: string, @Res() res: Response) {
@@ -45,7 +49,6 @@ export class RegistrationController {
     return await this.registrationService.getRegistrationsForEvent(eventId);
   }
 
-  @Roles(Role.Organizer)
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
@@ -73,8 +76,20 @@ export class RegistrationController {
     );
     return { message: 'Registration cancelled successfully' };
   }
-  @Roles(Role.Organizer)
+  
   @Patch('confirm/:id')
+  async confirmRegistration(
+    @Param('id') id: string,
+  ): Promise<Registration> {
+    const registration = await this.registrationService.get(id);
+    const { user, event } = registration;
+    await this.mailService.sendRegistrationConfirmation(
+      user.email,
+      user.fullName,
+      event.title,
+      event.eventDate.toISOString()
+   
+  );
   async confirmRegistration(@Param('id') id: string): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
   }

@@ -37,4 +37,7 @@ export class Event extends TimestampEntities {
   validated: boolean;
   @ManyToOne(() => Category, (category) => category.events, { eager: true })
   category: Category;
+
+  @Column({ type: 'int', nullable: true })
+  participantLimit: number;
 }

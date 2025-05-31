@@ -1,20 +1,21 @@
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import {
   ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Registration } from './entities/registration.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Event } from 'src/event/entities/event.entity';
-import {
-  EventDto,
-  RegistrationResponseDto,
-  UserDto,
-} from './dto/registration-response.dto';
+
+import { EventDto, RegistrationResponseDto, UserDto } from './dto/registration-response.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
+import { Role } from 'src/auth/roles.enum';
+import { MailService } from '../mail/mail.service'; 
 import { QrCodeService } from '../qrcode/qrcode.service';
 @Injectable()
 export class RegistrationService {
@@ -26,14 +27,15 @@ export class RegistrationService {
     private readonly userRepo: Repository<User>,
 
     @InjectRepository(Event)
-    private readonly eventRepo: Repository<Event>,
-    private qrCodeService: QrCodeService, // ✅ inject it here
+    private readonly eventRepo: Repository<Event>,    
+    private readonly mailService: MailService,
+    private qrCodeService: QrCodeService, 
   ) {}
 
   //get all registration
   async getRegistrations(): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
-      relations: ['user', 'event'], // Important: load the relations
+      relations: ['user', 'event'], 
     });
 
     return registrations.map((registration) => {
@@ -70,8 +72,13 @@ export class RegistrationService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const event = await this.eventRepo.findOne({ where: { id: eventId } });
 
-    if (!user || !event) {
-      throw new NotFoundException('User or Event not found');
+    if (!event) throw new NotFoundException('Event not found');
+    if (!user ) throw new NotFoundException('User not found');
+
+    const currentCount = await this.registrationRepo.count({ where: { event: { id: eventId } } });
+
+    if (currentCount >= event.participantLimit) {
+      throw new BadRequestException('Event has reached full capacity');
     }
 
     const existing = await this.registrationRepo.findOne({
@@ -150,15 +157,39 @@ export class RegistrationService {
       );
     }
 
-    await this.registrationRepo.remove(registration);
-  }
-  //confirm registration (update)
-  async confirmRegistration(id: string) {
-    const registration = await this.registrationRepo.findOneBy({ id });
+  
+  await this.registrationRepo.remove(registration);
+}
+//confirm registration (update)
+async confirmRegistration(id: string) {
+  const registration = await this.registrationRepo.findOneBy({ id });
+  if (!registration) throw new NotFoundException('Registration not found');
+  registration.confirmed = true;
+  await this.mailService.sendRegistrationConfirmation(
+    registration.user.email,
+    registration.user.fullName,
+    registration.event.title,
+    registration.event.eventDate.toISOString().split('T')[0] // Format date as YYYY-MM-DD
+  );
+
+  return this.registrationRepo.save(registration);
+}
+
+  async get(id: string): Promise<Registration> {
+    const registration = await this.registrationRepo.findOne({
+      where: { id },
+      relations: ['user', 'event'],
+    });
     if (!registration) throw new NotFoundException('Registration not found');
-    registration.confirmed = true;
-    return this.registrationRepo.save(registration);
+    return registration;
   }
+
+  async findAll(
+    where?: FindOptionsWhere<Registration>,
+  ): Promise<Registration[]> {
+    return this.registrationRepo.find({ where, relations: ['user', 'event'] });
+  }
+
 
   async handleQrScan(id: string): Promise<string> {
     const registration = await this.registrationRepo.findOne({
