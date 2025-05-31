@@ -75,4 +75,30 @@ export class MailService {
     await this.transporter.sendMail(mailOptions);
   } 
   
+  async sendRegistrationConfirmation(email: string, fullName: string, eventName: string, eventDate: string) {
+    const mailOptions = {
+      from: this.configService.get('EMAIL_FROM'),
+      to: email,
+      subject: `Registration Confirmed for ${eventName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
+          <div style="text-align: center;">
+            <h2 style="color: #2196F3;">Registration Confirmed!</h2>
+          </div>
+          <p style="font-size: 16px;">Hi <strong>${fullName}</strong>,</p>
+          <p style="font-size: 16px;">
+            You have successfully registered for <strong>${eventName}</strong>.<br/>
+            <b>Date:</b> ${eventDate}
+          </p>
+          <p style="font-size: 14px; color: #888888;">We look forward to seeing you at the event!</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
+          <p style="font-size: 12px; color: #999999; text-align: center;">
+            If you have any questions, reply to this email.
+          </p>
+        </div>
+      `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
 }

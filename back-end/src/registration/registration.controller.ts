@@ -29,7 +29,6 @@ export class RegistrationController {
     return await this.registrationService.getRegistrationsForEvent(eventId);
   }
 
-  @Roles(Role.Organizer)
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
@@ -51,11 +50,12 @@ export class RegistrationController {
     );
     return { message: 'Registration cancelled successfully' };
   }
-  @Roles(Role.Organizer)
+
   @Patch('confirm/:id')
   async confirmRegistration(
     @Param('id') id: string,
   ): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
   }
+  
 }

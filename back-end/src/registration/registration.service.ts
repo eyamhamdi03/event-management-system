@@ -7,6 +7,8 @@ import { Event } from 'src/event/entities/event.entity';
 import { EventDto, RegistrationResponseDto, UserDto } from './dto/registration-response.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { Role } from 'src/auth/roles.enum';
+import { MailService } from '../mail/mail.service'; 
+
 
 @Injectable()
 export class RegistrationService {
@@ -19,6 +21,9 @@ export class RegistrationService {
 
     @InjectRepository(Event)
     private readonly eventRepo: Repository<Event>,
+    
+    private readonly mailService: MailService,
+
   ) {}
 
  //get all registration
@@ -141,6 +146,13 @@ async confirmRegistration(id: string) {
   const registration = await this.registrationRepo.findOneBy({ id });
   if (!registration) throw new NotFoundException('Registration not found');
   registration.confirmed = true;
+  await this.mailService.sendRegistrationConfirmation(
+    registration.user.email,
+    registration.user.fullName,
+    registration.event.title,
+    registration.event.eventDate.toISOString().split('T')[0] // Format date as YYYY-MM-DD
+  );
+
   return this.registrationRepo.save(registration);
 }
 
