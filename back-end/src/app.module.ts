@@ -19,6 +19,7 @@ import { typeOrmConfig } from './ormconfig';
 import { ConfigModule } from '@nestjs/config';
 
 import { QrCodeModule } from './qrcode/qrcode.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ dotenv.config();
         limit: 10, // Max 10 requests per minute
       },
     ]),
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [

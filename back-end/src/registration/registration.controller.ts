@@ -6,7 +6,7 @@ import {
   Param,
   Patch,
   Post,
-  Put,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -19,13 +19,16 @@ import { Role } from '../auth/roles.enum';
 import { RegistrationResponseDto } from './dto/registration-response.dto';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { MailService } from 'src/mail/mail.service';
-
 import { Response } from 'express';
+import { Parser } from 'json2csv';
+import { RegistrationExportDto } from './dto/registration-export.dto';
+
 @UseGuards(JwtAuthGuard)
 @Controller('registration')
 export class RegistrationController {
-  constructor(private readonly registrationService: RegistrationService
-  , private readonly mailService: MailService
+  constructor(
+    private readonly registrationService: RegistrationService,
+    private readonly mailService: MailService,
   ) {}
 
   @Get('scan/:id')
@@ -52,12 +55,11 @@ export class RegistrationController {
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
-  ): Promise<{ registration: Registration}> {
-    const { registration } =
-      await this.registrationService.registerToEvent(
-        registrationData.eventId,
-        registrationData.userId,
-      );
+  ): Promise<{ registration: Registration }> {
+    const { registration } = await this.registrationService.registerToEvent(
+      registrationData.eventId,
+      registrationData.userId,
+    );
 
     return { registration };
   }
@@ -76,11 +78,21 @@ export class RegistrationController {
     );
     return { message: 'Registration cancelled successfully' };
   }
-  
+
   @Patch('confirm/:id')
   async confirmRegistration(
     @Param('id') id: string,
   ): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
   }
+
+  @Patch(':id/check-in')
+  @Roles(Role.Admin, Role.Organizer)
+  async checkIn(@Param('id') id: string): Promise<{ message: string }> {
+    await this.registrationService.checkInRegistration(id);
+    return { message: 'Participant checked in.' };
+  }
+
+ 
+
 }

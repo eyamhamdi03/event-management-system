@@ -119,4 +119,65 @@ const mailOptions = {
 
     await this.transporter.sendMail(mailOptions);
   }
+
+  async sendEventReminder(email: string, fullName: string, eventName: string, eventDate: string) {
+  const mailOptions = {
+    from: this.configService.get('EMAIL_FROM'),
+    to: email,
+    subject: `⏰ Reminder: Upcoming Event – ${eventName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
+        <div style="text-align: center;">
+            <h2 style="color: #4CAF50;">Hi ${fullName}, your event is in 24 hours!</h2>
+        </div>
+        <p style="font-size: 16px;">This is a friendly reminder that you're registered for the event <strong>${eventName}</strong>.</p>
+        <p style="font-size: 16px;">📅 <strong>Date:</strong> ${eventDate}</p>
+        <p style="font-size: 16px;">
+          Make sure to arrive on time and have your QR code ready for a smooth check-in.
+        </p>
+        <p style="font-size: 14px; color: #888888;">If you have any questions or can no longer attend, please contact the organizers.</p>
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
+        <p style="font-size: 12px; color: #999999; text-align: center;">
+          We look forward to seeing you there!
+        </p>
+      </div>
+    `,
+  };
+
+  await this.transporter.sendMail(mailOptions);
+}
+
+async sendThankYouForParticipation(
+  email: string,
+  fullName: string,
+  eventName: string,
+) {
+  const mailOptions = {
+    from: this.configService.get('EMAIL_FROM'),
+    to: email,
+    subject: `Thanks for Participating in ${eventName}!`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
+        <div style="text-align: center;">
+          <h2 style="color: #4CAF50;">Thank You, ${fullName}!</h2>
+        </div>
+        <p style="font-size: 16px;">
+          We truly appreciate your participation in <strong>${eventName}</strong>. It was a pleasure having you with us, and we hope you had a meaningful experience.
+        </p>
+        <p style="font-size: 16px;">
+          Your presence made the event more special, and we’re grateful for your time and engagement.
+        </p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
+        <p style="font-size: 12px; color: #999999; text-align: center;">
+          Hope to see you again soon at our future events!
+        </p>
+      </div>
+    `,
+  };
+
+  await this.transporter.sendMail(mailOptions);
+}
+
+
 }

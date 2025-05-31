@@ -13,5 +13,6 @@ import { MailModule } from '../mail/mail.module';
   imports: [TypeOrmModule.forFeature([Registration, User, Event]),AuthModule,MailModule,QrCodeModule],
   controllers: [RegistrationController],
   providers: [RegistrationService],
+  exports: [RegistrationService],
 })
 export class RegistrationModule {}

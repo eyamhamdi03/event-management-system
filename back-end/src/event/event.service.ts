@@ -1,15 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
-import { Repository } from 'typeorm';
+import { Repository, Between, MoreThanOrEqual } from 'typeorm';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { CreateEventDto } from './dto/create-event.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { MailService } from '../mail/mail.service';
+import { Registration } from 'src/registration/entities/registration.entity';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
     private EventRepository: Repository<Event>,
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
+    private readonly mailService: MailService,
   ) {}
   async getEvents(): Promise<any[]> {
     const events = await this.EventRepository.find({ relations: ['registrations'] });
@@ -117,9 +123,6 @@ export class EventService {
       query.andWhere('event.eventDate >= :today', { today: new Date() });
     }
     
-   
-    
-
     if (hostId) {
       query.andWhere('host.id = :hostId', { hostId: parseInt(hostId) });
     }
@@ -135,6 +138,44 @@ export class EventService {
       .getManyAndCount();
 
     return { data, total };
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async sendEventReminders() {
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const events = await this.EventRepository.find({
+      where: {
+        eventDate: Between(
+          new Date(in24h.getTime() - 30 * 60 * 1000), // 30min window
+          new Date(in24h.getTime() + 30 * 60 * 1000)
+        ),
+      },
+      relations: ['registrations', 'registrations.user'],
+    });
+    for (const event of events) {
+      for (const reg of event.registrations) {
+        await this.mailService.sendEventReminder(
+          reg.user.email,
+          reg.user.fullName,
+          event.title,
+          event.eventDate.toISOString().split('T')[0]
+        );
+      }
+    }
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    const today = new Date();
+    return this.EventRepository.find({
+      where: {
+        eventDate: MoreThanOrEqual(today),
+      },
+      order: {
+        eventDate: 'ASC',
+      },
+      relations: ['registrations'],
+    });
   }
 }
 

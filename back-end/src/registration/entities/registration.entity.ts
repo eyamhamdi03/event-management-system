@@ -22,4 +22,8 @@ export class Registration extends TimestampEntities {
 
   @Column({ default: false })
   confirmed: boolean;
+
+  @Column({ default: false })
+  checkedIn: boolean;
+
 }
