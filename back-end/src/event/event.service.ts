@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { FilterEventsDto } from './dto/filter-events.dto';
+import { CreateEventDto } from './dto/create-event.dto';
 
 @Injectable()
 export class EventService {
@@ -10,16 +11,37 @@ export class EventService {
     @InjectRepository(Event)
     private EventRepository: Repository<Event>,
   ) {}
-  async getEvents(): Promise<Event[]> {
-    return await this.EventRepository.find();
+  async getEvents(): Promise<any[]> {
+    const events = await this.EventRepository.find({ relations: ['registrations'] });
+    return events.map(event => {
+      const currentParticipants = event.registrations.length;
+      const isFull = currentParticipants >= event.participantLimit;
+      return {
+        ...event,
+        currentParticipants,
+        isFull,
+      };
+    });
   }
-  async createEvent(event: Event): Promise<Event> {
-    return await this.EventRepository.save(event);
+  async createEvent(eventDto: CreateEventDto): Promise<Event> {
+    const event = this.EventRepository.create(eventDto);
+    return this.EventRepository.save(event);
   }
-  async getEventById(id: string): Promise<Event> {
-    const event = await this.EventRepository.findOne({ where: { id } });
-    if (!event) throw new NotFoundException(`Event with ID ${id} not found`);
-    return event;
+  async getEventById(id: string): Promise<any> {
+    const event = await this.EventRepository.findOne({
+      where: { id },
+      relations: ['registrations'],
+    });
+    if (!event) throw new NotFoundException('Event with this id ${id} not found');
+
+    const currentParticipants = event.registrations.length;
+    const isFull = currentParticipants >= event.participantLimit;
+
+    return {
+      ...event,
+      currentParticipants,
+      isFull,
+    };
   }
 
   async replaceEvent(id: string, newEvent: Event): Promise<Event> {
@@ -115,5 +137,5 @@ export class EventService {
     return { data, total };
   }
 }
-  
+
 

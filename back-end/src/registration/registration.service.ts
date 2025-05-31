@@ -1,10 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Registration } from './entities/registration.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Event } from 'src/event/entities/event.entity';
-
 import { EventDto, RegistrationResponseDto, UserDto } from './dto/registration-response.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { Role } from 'src/auth/roles.enum';
@@ -62,8 +61,13 @@ export class RegistrationService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const event = await this.eventRepo.findOne({ where: { id: eventId }});
 
-    if (!user || !event) {
-      throw new NotFoundException('User or Event not found');
+    if (!event) throw new NotFoundException('Event not found');
+    if (!user ) throw new NotFoundException('User not found');
+
+    const currentCount = await this.registrationRepo.count({ where: { event: { id: eventId } } });
+
+    if (currentCount >= event.participantLimit) {
+      throw new BadRequestException('Event has reached full capacity');
     }
 
     const existing = await this.registrationRepo.findOne({
