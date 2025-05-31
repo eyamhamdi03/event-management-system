@@ -133,7 +133,7 @@ const mailOptions = {
         <p style="font-size: 16px;">This is a friendly reminder that you're registered for the event <strong>${eventName}</strong>.</p>
         <p style="font-size: 16px;">📅 <strong>Date:</strong> ${eventDate}</p>
         <p style="font-size: 16px;">
-          Make sure to arrive on time and have your QR code ready (if applicable) for a smooth check-in.
+          Make sure to arrive on time and have your QR code ready for a smooth check-in.
         </p>
         <p style="font-size: 14px; color: #888888;">If you have any questions or can no longer attend, please contact the organizers.</p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
