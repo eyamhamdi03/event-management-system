@@ -1,10 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import {
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+
 
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Registration } from './entities/registration.entity';
