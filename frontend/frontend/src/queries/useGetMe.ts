@@ -4,20 +4,17 @@ import {userClient} from "../api/user.client.ts";
 
 export const GET_ME_QUERY_KEY = 'getGetMe';
 
-// useGetMe.ts
+// src/queries/useGetMe.ts
 export const useGetMe = () => {
-  return useQuery<User | null>({  // Explicitly include null in return type
-    queryKey: [GET_ME_QUERY_KEY],
+  return useQuery<User>({
+    queryKey: ['currentUser'],
     queryFn: async () => {
-      try {
-        const { data } = await userClient.me();
-        return data || null;  // Ensure never undefined
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-        return null;  // Return null on error
+      const { data } = await userClient.me();
+      if (!data || !data.role) {
+        throw new Error('Invalid user data');
       }
-    },
-    retry: false,
-    staleTime: 5 * 60 * 1000
+      console.log(data)
+      return data;
+    }
   });
 };

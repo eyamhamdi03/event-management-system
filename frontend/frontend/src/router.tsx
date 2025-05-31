@@ -6,46 +6,40 @@ import {useEffect, useState} from "react";
 import {useGetMe} from "./queries/useGetMe.ts";
 import { Role } from "./types.ts";
 
-// Root.tsx
+
+// src/Root.tsx
 const Root = () => {
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const me = useGetMe();
 
   useEffect(() => {
-    console.log('User data:', {
-      data: me.data,
-      role: me.data?.role,
-      id: me.data?.id
-    });
-
     if (me.isFetched) {
       if (me.data) {
-        const isOrganizer = me.data.role?.toLowerCase() === Role.Organizer.toLowerCase();
-        console.log(`User is ${isOrganizer ? 'organizer' : 'not organizer'}`);
+        // Debug important
+        console.log('User role:', me.data.role);
+        console.log('User ID:', me.data.id);
+
+        const path = me.data.role?.toLowerCase() === 'organizer' 
+          ? `/manage/organizer/${me.data.id}/events`
+          : "/manage/events";
         
-        setRedirectPath(
-          isOrganizer
-            ? `/manage/organizer/${me.data.id}/events`
-            : "/manage/events"
-        );
+        console.log('Should redirect to:', path);
+        setRedirectPath(path);
       } else {
-        console.log('No user data, redirecting to login');
         setRedirectPath("/auth/login");
       }
     }
   }, [me.isFetched, me.data]);
 
-  if (me.isLoading) {
-    return <div>Loading user data...</div>;
-  }
-
   if (redirectPath) {
-    console.log('Redirecting to:', redirectPath);
-    return <Navigate to={redirectPath} replace={true} />;
+    console.log('Actually redirecting to:', redirectPath);
+    return <Navigate to={redirectPath} replace />;
   }
 
   return null;
 };
+
+
 
 export const router: RouteObject[] = [
     {
