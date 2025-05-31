@@ -6,7 +6,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Registration } from '../../registration/entities/registration.entity';
-import { TimestampEntities } from 'src/generics/timestamp.entities';
+import { TimestampEntities } from '../../generics/timestamp.entities';
 import { User } from '../../user/entities/user.entity';
 import { Category } from '../../category/entities/category.entity';
 

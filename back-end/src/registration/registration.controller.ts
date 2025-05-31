@@ -1,19 +1,35 @@
-import {Body,Controller,Delete,Get,Param,Patch,Post,Put, Req, UseGuards,} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { RegistrationService } from './registration.service';
 import { Registration } from './entities/registration.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/roles.enum';
+import { Role } from '../auth/roles.enum';
 import { RegistrationResponseDto } from './dto/registration-response.dto';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
- 
-
+import { Response } from 'express';
 @UseGuards(JwtAuthGuard)
-
 @Controller('registration')
 export class RegistrationController {
   constructor(private readonly registrationService: RegistrationService) {}
 
+  @Get('scan/:id')
+  async scanRegistration(@Param('id') id: string, @Res() res: Response) {
+    const html = await this.registrationService.handleQrScan(id);
+    res.setHeader('Content-Type', 'text/html');
+    return res.send(html);
+  }
 
   @Roles(Role.Admin)
   @Get()
@@ -33,29 +49,33 @@ export class RegistrationController {
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
-  ): Promise<Registration> {
-    return await this.registrationService.registerToEvent(registrationData.eventId, registrationData.userId);
+  ): Promise<{ registration: Registration; qrcode: string }> {
+    const { registration, qrcode } =
+      await this.registrationService.registerToEvent(
+        registrationData.eventId,
+        registrationData.userId,
+      );
+
+    return { registration, qrcode };
   }
 
   @Roles(Role.Organizer, Role.User)
   @Delete()
   async cancelRegistration(
-    @Body() { eventId, userId }: { eventId: string, userId: string },
-    @Req() req: any
+    @Body() { eventId, userId }: { eventId: string; userId: string },
+    @Req() req: any,
   ) {
     await this.registrationService.cancelRegistration(
       eventId,
-      userId, 
-      req.user.role, 
-      req.user.id 
+      userId,
+      req.user.role,
+      req.user.id,
     );
     return { message: 'Registration cancelled successfully' };
   }
   @Roles(Role.Organizer)
   @Patch('confirm/:id')
-  async confirmRegistration(
-    @Param('id') id: string,
-  ): Promise<Registration> {
+  async confirmRegistration(@Param('id') id: string): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
   }
 }
