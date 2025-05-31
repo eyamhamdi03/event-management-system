@@ -22,4 +22,7 @@ export class CreateEventInput {
   
   @Field(() => [String])
   categoryIds: string[];
+  
+  @Field(() => Number, { nullable: true })
+  maxParticipants?: number;
 }

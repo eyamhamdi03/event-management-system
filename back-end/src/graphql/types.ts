@@ -4,11 +4,13 @@ import { Registration } from '../registration/entities/registration.entity';
 import { Category } from '../category/entities/category.entity';
 import { CreateEventInput } from '../event/dto/create-event.input';
 import { CreateUserInput } from '../user/dto/create-user.input';
+import { EventFilterInput } from '../event/dto/filter-event.input';
 
 export interface Resolvers {
   Query: {
     events: () => Promise<Event[]>;
     event: (args: { id: string }) => Promise<Event>;
+    filterEvents: (args: { filter: EventFilterInput }) => Promise<Event[]>;
     users: () => Promise<User[]>;
     user: (args: { id: string }) => Promise<User>;
     registrations: () => Promise<Registration[]>;
@@ -46,3 +48,5 @@ export interface Resolvers {
   
   DateTime: any;
 }
+
+export { EventFilterInput };

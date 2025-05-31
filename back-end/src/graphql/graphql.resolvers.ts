@@ -1,5 +1,6 @@
 import { DateTimeResolver } from 'graphql-scalars';
 import { pubSub } from './pubsub';
+import { EventFilterInput } from './types';
 
 export const resolvers = {
   DateTime: DateTimeResolver,
@@ -7,6 +8,9 @@ export const resolvers = {
   Query: {
     events: (_, __, { eventService }) => eventService.findAll(),
     event: (_, { id }, { eventService }) => eventService.findById(id),
+    filterEvents: async (_: any, { filter }: { filter: EventFilterInput }, { eventService }) => {
+      return eventService.filterEvents(filter);
+    },
     users: (_, __, { userService }) => userService.findAll(),
     user: (_, { id }, { userService }) => userService.findById(id),
     registrations: (_, __, { registrationService }) => registrationService.findAll(),

@@ -56,6 +56,7 @@ export const typeDefs = `
     registration(id: ID!): Registration
     categories: [Category!]!
     category(id: ID!): Category
+    filterEvents(filter: EventFilterInput): [Event!]!
   }
 
   type Mutation {
@@ -95,4 +96,14 @@ export const typeDefs = `
     location: String
     categoryIds: [ID!]
   }
+  input EventFilterInput {
+  id: ID
+  titleContains: String
+  dateFrom: DateTime
+  dateTo: DateTime
+  categoryIds: [ID!]
+  availableOnly: Boolean
+  minAvailableSpots: Int
+  maxParticipants: Int
+}
 `;
