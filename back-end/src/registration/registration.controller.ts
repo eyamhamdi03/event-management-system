@@ -90,7 +90,6 @@ export class RegistrationController {
       event.eventDate.toISOString()
    
   );
-  async confirmRegistration(@Param('id') id: string): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
   }
 }
