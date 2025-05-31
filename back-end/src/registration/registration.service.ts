@@ -156,4 +156,19 @@ async confirmRegistration(id: string) {
   return this.registrationRepo.save(registration);
 }
 
+  async get(id: string): Promise<Registration> {
+    const registration = await this.registrationRepo.findOne({
+      where: { id },
+      relations: ['user', 'event'],
+    });
+    if (!registration) throw new NotFoundException('Registration not found');
+    return registration;
+  }
+
+  async findAll(
+    where?: FindOptionsWhere<Registration>,
+  ): Promise<Registration[]> {
+    return this.registrationRepo.find({ where, relations: ['user', 'event'] });
+  }
+
 }
