@@ -12,6 +12,7 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { Role } from 'src/auth/roles.enum';
 import { MailService } from '../mail/mail.service'; 
 import { QrCodeService } from '../qrcode/qrcode.service';
+import { log } from 'console';
 @Injectable()
 export class RegistrationService {
   constructor(
@@ -93,10 +94,9 @@ export class RegistrationService {
       confirmed: false,
     });
     const savedRegistration = await this.registrationRepo.save(registration);
-    const qrLink = `https://localhost:3000/registration/scan/${savedRegistration.id}`;
-    const qrCode = await this.qrCodeService.generateQrCode(qrLink);
 
-    return { registration: savedRegistration, qrcode: qrCode };
+
+    return { registration: savedRegistration };
   }
 
   // get resgistration by event id
@@ -157,14 +157,23 @@ export class RegistrationService {
 }
 //confirm registration (update)
 async confirmRegistration(id: string) {
-  const registration = await this.registrationRepo.findOneBy({ id });
+  const registration = await this.registrationRepo.findOne({
+    where: { id },
+    relations: ['user', 'event'],
+  });
   if (!registration) throw new NotFoundException('Registration not found');
   registration.confirmed = true;
+
+  // Generate QR code for this registration
+  const qrLink = `https://localhost:3000/registration/scan/${registration.id}`;
+  const qrCode = await this.qrCodeService.generateQrCode(qrLink);
+  log('QR Code generated:', qrCode);
   await this.mailService.sendRegistrationConfirmation(
     registration.user.email,
     registration.user.fullName,
     registration.event.title,
-    registration.event.eventDate.toISOString().split('T')[0] // Format date as YYYY-MM-DD
+    registration.event.eventDate.toISOString().split('T')[0],
+    qrCode
   );
 
   return this.registrationRepo.save(registration);
