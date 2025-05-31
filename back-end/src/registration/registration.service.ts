@@ -91,7 +91,7 @@ async getRegistrationsForEvent(
 ): Promise<RegistrationResponseDto[]> {
   const registrations = await this.registrationRepo.find({
     where: { event: { id: eventId } },
-    relations: ['user', 'event'], // Make sure to include both relations
+    relations: ['user', 'event'], 
   });
 
   // Transform each registration and its relations
@@ -139,5 +139,27 @@ async confirmRegistration(id: string) {
   registration.confirmed = true;
   return this.registrationRepo.save(registration);
 }
+// registration.service.ts
+async getRegistrationsForEventByOrganizer(eventId: string, organizerId: string): Promise<Registration[]> {
+  const event = await this.eventRepo.findOne({
+    where: { id: eventId },
+    relations: ['host'],
+  });
+
+  if (!event) {
+    throw new NotFoundException('Event not found');
+  }
+
+  if (event.host.id !== organizerId) {
+    throw new ForbiddenException('You are not the organizer of this event');
+  }
+
+  return this.registrationRepo.find({
+    where: { event: { id: eventId } },
+    relations: ['user', 'event'],
+  });
+}
+
+
 
 }

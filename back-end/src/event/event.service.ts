@@ -114,6 +114,14 @@ export class EventService {
 
     return { data, total };
   }
+
+async getEventsByUserId(userId: string): Promise<Event[]> {
+  return this.EventRepository.find({
+    where: { host: { id: userId } },
+    relations: ['host', 'category'], 
+  });
+}
+
 }
   
 

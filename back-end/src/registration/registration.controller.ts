@@ -29,7 +29,7 @@ export class RegistrationController {
     return await this.registrationService.getRegistrationsForEvent(eventId);
   }
 
-  @Roles(Role.Organizer)
+  @Roles(Role.User)
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
@@ -58,4 +58,18 @@ export class RegistrationController {
   ): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
   }
+
+  @Roles(Role.Organizer)
+@Get('event/:eventId/own')
+async getRegistrationsByOwnEvent(
+  @Param('eventId') eventId: string,
+  @Req() req: any,
+): Promise<Registration[]> {
+  const organizerId = req.user.sub;
+  return await this.registrationService.getRegistrationsForEventByOrganizer(eventId, organizerId);
 }
+
+
+
+}
+

@@ -61,4 +61,9 @@ export class EventController {
   async deleteEvent(@Param('id') id: string): Promise<void> {
     return await this.eventService.deleteEvent(id);
   }
+@Roles(Role.User)
+   @Get('user/:userId')
+  getEventsByUser(@Param('userId') userId: string) {
+    return this.eventService.getEventsByUserId(userId);
+  }
 }
