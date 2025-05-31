@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
 import { FilterEventsDto } from './dto/filter-events.dto';
+import { CreateEventInput } from './dto/create-event.input';
 
 @Injectable()
 export class EventService {
@@ -49,6 +50,28 @@ export class EventService {
         `Event with ID ${id} not found or not soft deleted`,
       );
     }
+  }
+  findAll(): Promise<Event[]> {
+    return this.EventRepository.find({ 
+      relations: ['organizer', 'categories', 'registrations'] 
+    });
+  }
+
+  async findById(id: string): Promise<Event> {
+    const event = await this.EventRepository.findOne({ 
+      where: { id },
+      relations: ['category', 'registrations']
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${id} not found`);
+    }
+    return event;
+  }
+
+  findByCategoryId(categoryId: string): Promise<Event[]> {
+    return this.EventRepository.find({
+      where: { category: { id: categoryId } }
+    });
   }
 
   //////filter////

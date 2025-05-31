@@ -16,6 +16,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
 import { ConfigModule } from '@nestjs/config';
+import { GraphQLModule } from './graphql/graphql.module';
 dotenv.config();
 
 @Module({
@@ -26,6 +27,7 @@ dotenv.config();
     EventModule,
     CategoryModule,
     RegistrationModule,
+    GraphQLModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
