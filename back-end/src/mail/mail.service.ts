@@ -75,29 +75,47 @@ export class MailService {
     await this.transporter.sendMail(mailOptions);
   } 
   
-  async sendRegistrationConfirmation(email: string, fullName: string, eventName: string, eventDate: string) {
-    const mailOptions = {
-      from: this.configService.get('EMAIL_FROM'),
-      to: email,
-      subject: `Registration Confirmed for ${eventName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
-          <div style="text-align: center;">
-            <h2 style="color: #2196F3;">Registration Confirmed!</h2>
-          </div>
-          <p style="font-size: 16px;">Hi <strong>${fullName}</strong>,</p>
-          <p style="font-size: 16px;">
-            You have successfully registered for <strong>${eventName}</strong>.<br/>
-            <b>Date:</b> ${eventDate}
-          </p>
-          <p style="font-size: 14px; color: #888888;">We look forward to seeing you at the event!</p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
-          <p style="font-size: 12px; color: #999999; text-align: center;">
-            If you have any questions, reply to this email.
-          </p>
-        </div>
-      `,
-    };
+  async sendRegistrationConfirmation(
+    email: string,
+    fullName: string,
+    eventName: string,
+    eventDate: string,
+    qrCodeDataUrl: string
+  ) {
+const mailOptions = {
+  from: this.configService.get('EMAIL_FROM'),
+  to: email,
+  subject: `🎟️ Your Registration for ${eventName} is Confirmed!`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
+      <div style="text-align: center;">
+        <h2 style="color: #4CAF50;">Registration Confirmed!</h2>
+      </div>
+      <p style="font-size: 16px;">Thank you for registering for <strong>${eventName}</strong>.</p>
+      <p style="font-size: 16px;">
+        Below is your unique QR code. You’ll need to present it when attending the event so that the organizers can verify your registration.
+      </p>
+      <div style="text-align: center; margin: 30px 0;">
+        <img src="cid:qrcode" alt="QR Code" style="width: 200px; height: 200px;" />
+      </div>
+      <p style="font-size: 14px; color: #888888;">
+        Please do not share this code. It is linked to your registration.
+      </p>
+      <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
+      <p style="font-size: 12px; color: #999999; text-align: center;">
+        Looking forward to seeing you at the event!
+      </p>
+    </div>
+  `,
+  attachments: [
+    {
+      filename: 'qrcode.png',
+      content: qrCodeDataUrl.split('base64,')[1],
+      encoding: 'base64',
+      cid: 'qrcode',
+    },
+  ],
+};
 
     await this.transporter.sendMail(mailOptions);
   }

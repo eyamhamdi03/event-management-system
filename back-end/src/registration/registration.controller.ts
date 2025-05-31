@@ -52,14 +52,14 @@ export class RegistrationController {
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
-  ): Promise<{ registration: Registration; qrcode: string }> {
-    const { registration, qrcode } =
+  ): Promise<{ registration: Registration}> {
+    const { registration } =
       await this.registrationService.registerToEvent(
         registrationData.eventId,
         registrationData.userId,
       );
 
-    return { registration, qrcode };
+    return { registration };
   }
 
   @Roles(Role.Organizer, Role.User)
@@ -81,15 +81,6 @@ export class RegistrationController {
   async confirmRegistration(
     @Param('id') id: string,
   ): Promise<Registration> {
-    const registration = await this.registrationService.get(id);
-    const { user, event } = registration;
-    await this.mailService.sendRegistrationConfirmation(
-      user.email,
-      user.fullName,
-      event.title,
-      event.eventDate.toISOString()
-   
-  );
     return await this.registrationService.confirmRegistration(id);
   }
 }
