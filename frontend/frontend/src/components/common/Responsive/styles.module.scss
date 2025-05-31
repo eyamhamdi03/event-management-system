@@ -1,0 +1,33 @@
+@use "../../../styles/mixins";
+
+.showForDesktop {
+  display: none;
+
+  @include mixins.respond-above("md") {
+    display: block;
+  }
+}
+
+.showForMobile {
+  display: block;
+
+  @include mixins.respond-above("md") {
+    display: none;
+  }
+}
+
+.hideForDesktop {
+  display: block;
+
+  @include mixins.respond-above("md") {
+    display: none;
+  }
+}
+
+.hideForMobile {
+  display: none;
+
+  @include mixins.respond-above("md") {
+    display: block;
+  }
+}

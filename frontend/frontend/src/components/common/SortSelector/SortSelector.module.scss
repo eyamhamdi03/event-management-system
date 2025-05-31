@@ -1,0 +1,17 @@
+@use "../../../styles/mixins";
+
+.selectWrapper {
+  width: 100%;
+  container-type: inline-size;
+
+  .select {
+    margin-bottom: 0 !important;
+    @include mixins.respond-above(lg) {
+      max-width: 180px;
+    }
+
+    input {
+      font-size: 0.9em;
+    }
+  }
+}

@@ -1,0 +1,55 @@
+@use "../../../styles/mixins";
+
+.card {
+  container-type: inline-size;
+  margin-bottom: 1rem;
+
+  .wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    place-content: space-between;
+
+    @include mixins.respond-below(sm, true) {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .searchBar {
+      margin-bottom: 0 !important;
+      width: 100%;
+      flex: 1;
+      min-width: 0; // Prevents flex item from overflowing
+    }
+
+    .filterAndActions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      place-self: flex-end;
+
+      @include mixins.respond-below(sm, true) {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    .filter {
+      display: flex;
+      align-items: center;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      place-self: flex-end;
+      flex-wrap: wrap;
+    }
+  }
+
+  button {
+    height: 42px !important;
+  }
+}

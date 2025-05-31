@@ -1,0 +1,22 @@
+@use "../../../styles/mixins.scss";
+
+.container {
+  margin-bottom: var(--tk-spacing-md);
+}
+
+.title {
+  margin-bottom: 0.5rem !important;
+  margin-top: 0;
+
+  @include mixins.respond-below(md) {
+    font-size: 25px !important;
+  }
+}
+
+.subheading {
+  font-size: 1rem;
+  color: var(--tk-color-text-muted, #6c757d);
+  font-weight: normal;
+  line-height: 1.4;
+  margin-bottom: 20px;
+}

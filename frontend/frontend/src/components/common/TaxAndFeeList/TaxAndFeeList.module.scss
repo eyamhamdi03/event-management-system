@@ -1,0 +1,62 @@
+.taxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+
+  .taxBlock {
+    border: 2px solid var(--tk-color-gray-2);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .taxName {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .taxValue {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .name {
+      justify-content: space-between;
+      align-items: center;
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      margin-right: 4px;
+    }
+
+    .header {
+      margin-bottom: var(--tk-spacing-sm);
+      background: #f1f1f1;
+      text-transform: capitalize;
+      color: #472e78;
+      border-radius: var(--tk-radius-xs) var(--tk-radius-xs) 0 0;
+      font-size: .8em;
+      display: flex;
+      padding: 8px 0 8px 13px;
+
+      .type {
+        flex: 1;
+      }
+
+      .action {
+        display: flex;
+        place-self: flex-end;
+      }
+    }
+
+    .body {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--tk-spacing-sm);
+      padding: 10px;
+    }
+  }
+}
+
