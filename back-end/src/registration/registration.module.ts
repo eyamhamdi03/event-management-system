@@ -6,11 +6,11 @@ import { Registration } from './entities/registration.entity';
 import { AuthModule } from 'src/auth/auth.module';
 import { User } from 'src/user/entities/user.entity';
 import { Event } from 'src/event/entities/event.entity';
+import { QrCodeModule } from 'src/qrcode/qrcode.module';
 import { MailModule } from '../mail/mail.module';
 
-
 @Module({
-  imports: [TypeOrmModule.forFeature([Registration, User, Event]),AuthModule,MailModule],
+  imports: [TypeOrmModule.forFeature([Registration, User, Event]),AuthModule,MailModule,QrCodeModule],
   controllers: [RegistrationController],
   providers: [RegistrationService],
 })

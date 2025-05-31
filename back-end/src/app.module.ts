@@ -14,8 +14,12 @@ import * as dotenv from 'dotenv';
 import { Category } from './category/entities/category.entity';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+
 import { typeOrmConfig } from './ormconfig';
 import { ConfigModule } from '@nestjs/config';
+
+import { QrCodeModule } from './qrcode/qrcode.module';
+
 dotenv.config();
 
 @Module({
@@ -24,12 +28,15 @@ dotenv.config();
     UserModule,
     EventModule,
     CategoryModule,
+    QrCodeModule,
     RegistrationModule,
     TypeOrmModule.forRoot(typeOrmConfig),
-    ThrottlerModule.forRoot([{
-      ttl: 60, // 1 minute
-      limit: 10, // Max 10 requests per minute
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60, // 1 minute
+        limit: 10, // Max 10 requests per minute
+      },
+    ]),
   ],
   controllers: [AppController],
   providers: [
