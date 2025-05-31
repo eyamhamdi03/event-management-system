@@ -83,4 +83,15 @@ export class EventController {
   async deleteEvent(@Param('id') id: string): Promise<void> {
     return await this.eventService.deleteEvent(id);
   }
+  @Get('/organizer/:hostId')
+  @Roles(Role.Organizer, Role.Admin)
+  async getEventsByOrganizer(
+    @Param('hostId') hostId: string,
+    @Query() filter: Omit<FilterEventsDto, 'hostId'>
+  ) {
+    return this.eventService.findAllFiltered({
+      ...filter,
+      hostId 
+    });
+  }
 }
