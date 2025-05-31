@@ -1,17 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
-import { Repository, Between } from 'typeorm';
+import { Repository, Between, MoreThanOrEqual } from 'typeorm';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from '../mail/mail.service';
+import { Registration } from 'src/registration/entities/registration.entity';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
     private EventRepository: Repository<Event>,
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
     private readonly mailService: MailService,
   ) {}
   async getEvents(): Promise<any[]> {
@@ -160,6 +163,19 @@ export class EventService {
         );
       }
     }
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    const today = new Date();
+    return this.EventRepository.find({
+      where: {
+        eventDate: MoreThanOrEqual(today),
+      },
+      order: {
+        eventDate: 'ASC',
+      },
+      relations: ['registrations'],
+    });
   }
 }
 
