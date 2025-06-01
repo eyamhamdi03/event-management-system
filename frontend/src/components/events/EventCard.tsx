@@ -1,5 +1,12 @@
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card'
 import { Calendar, MapPin, Clock, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -10,12 +17,12 @@ type EventCardProps = {
 }
 
 export default function EventCard({ event, onDelete }: EventCardProps) {
-  const formattedDate = event.eventDate 
+  const formattedDate = event.eventDate
     ? format(new Date(event.eventDate), 'PPP', { locale: fr })
     : 'Date non spécifiée'
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+    <Card className="relative z-10 hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-gray-800 line-clamp-2">
           {event.title || event.name || 'Sans titre'}
@@ -28,7 +35,7 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
               {event.description}
             </CardDescription>
           )}
-          
+
           <div className="space-y-2 text-sm text-gray-600">
             {event.eventDate && (
               <div className="flex items-center gap-2">
@@ -36,7 +43,7 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
                 <span>{formattedDate}</span>
               </div>
             )}
-            
+
             {event.location && (
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-red-600" />
@@ -47,8 +54,8 @@ export default function EventCard({ event, onDelete }: EventCardProps) {
         </div>
       </CardContent>
       <CardFooter className="justify-end">
-        <Button 
-          variant="destructive" 
+        <Button
+          variant="destructive"
           size="sm"
           onClick={onDelete}
           className="gap-2"

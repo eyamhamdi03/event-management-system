@@ -5,15 +5,40 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class MailService {
   private transporter: nodemailer.Transporter;
+  private isConfigured: boolean = false;
 
   constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail', 
-      auth: {
-        user: this.configService.get('EMAIL_USER'),
-        pass: this.configService.get('EMAIL_PASSWORD'),
-      },
-    });
+    const emailUser = this.configService.get('EMAIL_USER');
+    const emailPassword = this.configService.get('EMAIL_PASSWORD');
+
+    // Check if email credentials are properly configured
+    this.isConfigured = emailUser &&
+      emailPassword &&
+      emailUser !== 'your_email@gmail.com' &&
+      emailPassword !== 'your_app_specific_password'; if (this.isConfigured) {
+        this.transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: emailUser,
+            pass: emailPassword,
+          },
+        });
+      } else {
+      console.warn('Email service not configured. Email functionality will be disabled.');
+    }
+  }
+
+  private async sendEmail(mailOptions: any): Promise<void> {
+    if (!this.isConfigured) {
+      throw new Error('Email service is not properly configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.');
+    }
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Failed to send email:', error.message);
+      throw new Error(`Email sending failed: ${error.message}`);
+    }
   }
 
   async sendPasswordResetEmail(email: string, name: string, resetUrl: string) {
@@ -38,15 +63,14 @@ export class MailService {
           <p style="font-size: 14px; color: #888888;">
             If you didn’t request a password reset, you can safely ignore this email. Your password will remain unchanged.
           </p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
-          <p style="font-size: 12px; color: #999999; text-align: center;">
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />          <p style="font-size: 12px; color: #999999; text-align: center;">
             This link will expire in 1 hour.
           </p>
         </div>
       `,
     };
-  
-    await this.transporter.sendMail(mailOptions);
+
+    await this.sendEmail(mailOptions);
   }
 
   async sendVerificationEmail(email: string, fullName: string, url: string) {
@@ -66,15 +90,14 @@ export class MailService {
             </a>
           </div>
           <p style="font-size: 14px; color: #888888;">If you didn’t create this account, you can safely ignore this email.</p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
-          <p style="font-size: 12px; color: #999999; text-align: center;">This link will expire in 24 hours.</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />          <p style="font-size: 12px; color: #999999; text-align: center;">This link will expire in 24 hours.</p>
         </div>
       `,
     };
-  
-    await this.transporter.sendMail(mailOptions);
-  } 
-  
+
+    await this.sendEmail(mailOptions);
+  }
+
   async sendRegistrationConfirmation(
     email: string,
     fullName: string,
@@ -82,11 +105,11 @@ export class MailService {
     eventDate: string,
     qrCodeDataUrl: string
   ) {
-const mailOptions = {
-  from: this.configService.get('EMAIL_FROM'),
-  to: email,
-  subject: `🎟️ Your Registration for ${eventName} is Confirmed!`,
-  html: `
+    const mailOptions = {
+      from: this.configService.get('EMAIL_FROM'),
+      to: email,
+      subject: `🎟️ Your Registration for ${eventName} is Confirmed!`,
+      html: `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
       <div style="text-align: center;">
         <h2 style="color: #4CAF50;">Registration Confirmed!</h2>
@@ -107,25 +130,25 @@ const mailOptions = {
       </p>
     </div>
   `,
-  attachments: [
-    {
-      filename: 'qrcode.png',
-      content: qrCodeDataUrl.split('base64,')[1],
-      encoding: 'base64',
-      cid: 'qrcode',
-    },
-  ],
-};
+      attachments: [
+        {
+          filename: 'qrcode.png',
+          content: qrCodeDataUrl.split('base64,')[1],
+          encoding: 'base64',
+          cid: 'qrcode',
+        },
+      ],
+    };
 
-    await this.transporter.sendMail(mailOptions);
+    await this.sendEmail(mailOptions);
   }
 
   async sendEventReminder(email: string, fullName: string, eventName: string, eventDate: string) {
-  const mailOptions = {
-    from: this.configService.get('EMAIL_FROM'),
-    to: email,
-    subject: `⏰ Reminder: Upcoming Event – ${eventName}`,
-    html: `
+    const mailOptions = {
+      from: this.configService.get('EMAIL_FROM'),
+      to: email,
+      subject: `⏰ Reminder: Upcoming Event – ${eventName}`,
+      html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
         <div style="text-align: center;">
             <h2 style="color: #4CAF50;">Hi ${fullName}, your event is in 24 hours!</h2>
@@ -136,27 +159,26 @@ const mailOptions = {
           Make sure to arrive on time and have your QR code ready for a smooth check-in.
         </p>
         <p style="font-size: 14px; color: #888888;">If you have any questions or can no longer attend, please contact the organizers.</p>
-        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />
-        <p style="font-size: 12px; color: #999999; text-align: center;">
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eeeeee;" />        <p style="font-size: 12px; color: #999999; text-align: center;">
           We look forward to seeing you there!
         </p>
       </div>
     `,
-  };
+    };
 
-  await this.transporter.sendMail(mailOptions);
-}
+    await this.sendEmail(mailOptions);
+  }
 
-async sendThankYouForParticipation(
-  email: string,
-  fullName: string,
-  eventName: string,
-) {
-  const mailOptions = {
-    from: this.configService.get('EMAIL_FROM'),
-    to: email,
-    subject: `Thanks for Participating in ${eventName}!`,
-    html: `
+  async sendThankYouForParticipation(
+    email: string,
+    fullName: string,
+    eventName: string,
+  ) {
+    const mailOptions = {
+      from: this.configService.get('EMAIL_FROM'),
+      to: email,
+      subject: `Thanks for Participating in ${eventName}!`,
+      html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #ffffff;">
         <div style="text-align: center;">
           <h2 style="color: #4CAF50;">Thank You, ${fullName}!</h2>
@@ -174,10 +196,34 @@ async sendThankYouForParticipation(
         </p>
       </div>
     `,
-  };
+    };
 
-  await this.transporter.sendMail(mailOptions);
-}
+    await this.sendEmail(mailOptions);
+  }
 
+  /**
+   * Check if email service is properly configured
+   * This can be used by admin endpoints to verify email setup
+   */
+  isEmailConfigured(): boolean {
+    return this.isConfigured;
+  }
+
+  /**
+   * Get email configuration status for admin purposes
+   */
+  getEmailStatus(): { configured: boolean; message: string } {
+    if (this.isConfigured) {
+      return {
+        configured: true,
+        message: 'Email service is properly configured and ready to send emails.'
+      };
+    } else {
+      return {
+        configured: false,
+        message: 'Email service is not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables with valid Gmail credentials.'
+      };
+    }
+  }
 
 }

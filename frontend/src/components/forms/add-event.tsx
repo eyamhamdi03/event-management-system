@@ -106,7 +106,9 @@ export function CreateEventForm() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="title">Title</Label>
+                    <Label htmlFor="title" className="mb-2">
+                      Title
+                    </Label>
                     <Input
                       id="title"
                       name="title"
@@ -117,7 +119,9 @@ export function CreateEventForm() {
                   </div>
 
                   <div>
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location" className="mb-2">
+                      Location
+                    </Label>
                     <Input
                       id="location"
                       name="location"
@@ -128,7 +132,9 @@ export function CreateEventForm() {
                   </div>
 
                   <div>
-                    <Label htmlFor="participantLimit">Participant Limit</Label>
+                    <Label htmlFor="participantLimit" className="mb-2">
+                      Participant Limit
+                    </Label>
                     <Input
                       id="participantLimit"
                       name="participantLimit"
@@ -142,12 +148,16 @@ export function CreateEventForm() {
 
                 <div className="space-y-4 pt-8 md:pt-0">
                   <div>
-                    <Label htmlFor="eventDate">Event Date</Label>
+                    <Label htmlFor="eventDate" className="mb-2">
+                      Event Date
+                    </Label>
                     <DatePicker date={eventDate} setDate={setEventDate} />
                   </div>
 
                   <div>
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="category" className="mb-2">
+                      Category
+                    </Label>
                     <Select
                       disabled={catLoading}
                       value={categoryId}
@@ -173,7 +183,9 @@ export function CreateEventForm() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="mb-2">
+                  Description
+                </Label>
                 <Textarea
                   id="description"
                   name="description"

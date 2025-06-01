@@ -2,8 +2,19 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Registration } from '../../registration/entities/registration.entity';
 import { TimestampEntities } from '../../generics/timestamp.entities';
 import { Event } from '../../event/entities/event.entity';
-import { Role } from '../../auth/roles.enum';
-import { SocialProvider } from '../../auth/socialProviders.enum';
+import { Role } from 'src/auth/roles.enum';
+import { SocialProvider } from 'src/auth/socialProviders.enum';
+import { registerEnumType } from '@nestjs/graphql';
+
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  ORGANIZER = 'ORGANIZER',
+  ATTENDEE = 'ATTENDEE'
+}
+
+registerEnumType(UserRole, {
+  name: 'UserRole',
+});
 @Entity()
 export class User extends TimestampEntities {
   @PrimaryGeneratedColumn('uuid')

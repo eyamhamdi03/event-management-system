@@ -27,7 +27,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     if (!dto) {
@@ -39,10 +39,27 @@ export class AuthService {
     );
     if (userExists) {
       throw new ConflictException('fullName or email already exists');
-    }
-
-    const salt = await bcrypt.genSalt();
+    } const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(dto.password, salt);
+
+    // Map frontend role names to backend Role enum
+    let userRole = Role.User; // default
+    if (dto.role) {
+      switch (dto.role) {
+        case 'organizer':
+          userRole = Role.Organizer;
+          break;
+        case 'participant':
+        case 'user':
+          userRole = Role.User;
+          break;
+        case 'admin':
+          userRole = Role.Admin;
+          break;
+        default:
+          userRole = Role.User;
+      }
+    }
 
     const { fullName, email } = dto;
     const user = await this.usersService.createUser({
@@ -50,7 +67,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       salt: salt,
-      role: Role.User,
+      role: userRole,
       phone: dto.phone,
       birthDate: dto.birthDate,
       emailVerified: false,
@@ -64,21 +81,26 @@ export class AuthService {
         secret: this.configService.get('JWT_VERIFY_SECRET'),
         expiresIn: '1d',
       },
-    );
-
-    // Save the token to the user
+    );    // Save the token to the user
     await this.usersService.updateEmailVerificationToken(
       user.id,
       emailVerificationToken,
     );
 
-    // Send verification email
-    const verificationUrl = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${emailVerificationToken}`;
-    await this.mailService.sendVerificationEmail(
-      email,
-      fullName,
-      verificationUrl,
-    );
+    // Send verification email - handle failure gracefully
+    let emailSent = false;
+    try {
+      const verificationUrl = `${this.configService.get('FRONTEND_URL')}/verify-email?token=${emailVerificationToken}`;
+      await this.mailService.sendVerificationEmail(
+        email,
+        fullName,
+        verificationUrl,
+      );
+      emailSent = true;
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      // Don't throw the error - user registration should still succeed
+    }
 
     const {
       password: _,
@@ -86,16 +108,22 @@ export class AuthService {
       emailVerificationToken: ___,
       ...result
     } = user;
-    return result;
+
+    return {
+      ...result,
+      emailSent,
+      message: emailSent
+        ? 'Account created successfully. Please check your email for verification.'
+        : 'Account created successfully. Email service is currently unavailable. You can try logging in or request a verification email later.'
+    };
   }
-
   async login(credentials: LoginDto) {
-    const { fullName, password } = credentials;
+    const { email, password } = credentials;
 
-    const user = await this.usersService.findByfullName(credentials.fullName);
+    const user = await this.usersService.findByEmail(email);
     if (!user) throw new NotFoundException('Invalid credentials');
 
-    const isValid = await bcrypt.compare(credentials.password, user.password);
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new UnauthorizedException('Invalid credentials');
 
     const payload = {
