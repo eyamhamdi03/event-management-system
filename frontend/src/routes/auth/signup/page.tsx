@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
 import { SignupForm } from '@/components/register-form'
 import { api } from '@/lib/api'
+import { useAuth } from '@/context/auth-context'
+import { useEffect } from 'react'
 
 export const Route = createFileRoute('/auth/signup/page')({
   component: SignupPage,
@@ -9,6 +11,14 @@ export const Route = createFileRoute('/auth/signup/page')({
 
 function SignupPage() {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate({ to: '/' })
+    }
+  }, [isAuthenticated, navigate])
 
   const signupMutation = useMutation({
     mutationFn: async (payload: {
