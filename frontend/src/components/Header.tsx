@@ -32,7 +32,7 @@ export default function Header() {
                 Home
               </Link>
               <Link
-                to="/event/details/page"
+                to="/event/events/page"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
                 Browse Events

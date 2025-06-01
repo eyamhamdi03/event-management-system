@@ -39,10 +39,27 @@ export class AuthService {
     );
     if (userExists) {
       throw new ConflictException('fullName or email already exists');
-    }
-
-    const salt = await bcrypt.genSalt();
+    } const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(dto.password, salt);
+
+    // Map frontend role names to backend Role enum
+    let userRole = Role.User; // default
+    if (dto.role) {
+      switch (dto.role) {
+        case 'organizer':
+          userRole = Role.Organizer;
+          break;
+        case 'participant':
+        case 'user':
+          userRole = Role.User;
+          break;
+        case 'admin':
+          userRole = Role.Admin;
+          break;
+        default:
+          userRole = Role.User;
+      }
+    }
 
     const { fullName, email } = dto;
     const user = await this.usersService.createUser({
@@ -50,7 +67,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       salt: salt,
-      role: Role.User,
+      role: userRole,
       phone: dto.phone,
       birthDate: dto.birthDate,
       emailVerified: false,

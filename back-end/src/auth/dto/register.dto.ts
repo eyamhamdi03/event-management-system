@@ -1,5 +1,6 @@
-import { IsDate, IsEmail, IsNumber, IsString, IsStrongPassword } from 'class-validator';
+import { IsDate, IsEmail, IsNumber, IsString, IsStrongPassword, IsOptional, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Role } from '../roles.enum';
 
 export class RegisterDto {
   @IsString()
@@ -8,7 +9,7 @@ export class RegisterDto {
   @IsEmail()
   email: string;
 
- @IsStrongPassword()
+  @IsStrongPassword()
   password: string;
 
   @IsNumber()
@@ -20,4 +21,9 @@ export class RegisterDto {
 
   @IsString()
   avatar: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['organizer', 'participant', 'user', 'admin'])
+  role?: string;
 }
