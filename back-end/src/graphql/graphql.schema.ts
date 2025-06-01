@@ -1,11 +1,11 @@
-export const typeDefs = `
-  type Event {
+export const typeDefs = `  type Event {
     id: ID!
     title: String!
     description: String!
     eventDate: DateTime!
     location: String!
-    category: [Category!]!
+    organizer: User!
+    categories: [Category!]!
     registrations: [Registration!]!
 
   }
@@ -24,7 +24,7 @@ export const typeDefs = `
     id: ID!
     event: Event!
     user: User!
-    confirmed: boolean!
+    confirmed: Boolean!
   }
 
   type Category {

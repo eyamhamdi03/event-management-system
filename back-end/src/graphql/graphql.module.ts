@@ -10,4 +10,4 @@ import { GraphQLService } from './graphql.service';
   providers: [GraphQLService],
   exports: [GraphQLService],
 })
-export class GraphQLModule {}
+export class GraphQLModule { }
