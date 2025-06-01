@@ -11,14 +11,11 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { User } from '../user/entities/user.entity';
-import { Req } from '@nestjs/common';
-import { Request } from 'express';
 import { RegistrationService } from '../registration/registration.service';
 import { RegistrationResponseDto } from '../registration/dto/registration-response.dto';
 import { RegistrationExportDto } from '../registration/dto/registration-export.dto';
 import { Response } from 'express';
 import { Parser } from 'json2csv';
-import { User } from 'src/user/entities/user.entity';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard)
@@ -27,7 +24,7 @@ export class EventController {
   constructor(
     private readonly eventService: EventService,
     private readonly registrationService: RegistrationService,
-  ) {}
+  ) { }
 
   @Get('mine')
   @Roles(Role.Organizer)
@@ -78,7 +75,7 @@ export class EventController {
   async updateEvent(
     @Param('id') id: string,
     @Body() partialEvent: Partial<Event>,
-    @Req() req: Request, 
+    @Req() req: Request,
   ): Promise<Event> {
     const user = req.user as User;
     const userId = user?.id;

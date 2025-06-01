@@ -9,12 +9,28 @@ export interface Event {
   eventDate: string
   location: string
   validated: boolean
-  participantLimit: number | null
+  participantLimit?: number
+  currentParticipants: number
+  isFull: boolean
+  isAvailable: boolean
   category: {
     id: string
     name: string
   }
-  registrations: any[]
+  host: {
+    id: string
+    fullName?: string
+    email: string
+  }
+  registrations: Array<{
+    id: string
+    confirmed: boolean
+    user: {
+      id: string
+      fullName?: string
+      email: string
+    }
+  }>
   createdAt: string
   updatedAt: string
 }

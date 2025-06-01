@@ -171,11 +171,9 @@ export class EventService {
 
     if (category) {
       query.andWhere('category.name = :category', { category });
-    }
-
-    if (search) {
+    }    if (search) {
       query.andWhere(
-        '(event.title ILIKE :search OR event.description ILIKE :search)',
+        '(event.title LIKE :search OR event.description LIKE :search)',
         {
           search: `%${search}%`,
         },
@@ -313,16 +311,14 @@ export class EventService {
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations')
-      .leftJoinAndSelect('registrations.user', 'registrationUser');
-
-    // Apply filters
+      .leftJoinAndSelect('registrations.user', 'registrationUser');    // Apply filters
     if (category) {
-      query.andWhere('category.name ILIKE :category', { category: `%${category}%` });
+      query.andWhere('category.name LIKE :category', { category: `%${category}%` });
     }
 
     if (search) {
       query.andWhere(
-        '(event.title ILIKE :search OR event.description ILIKE :search OR event.location ILIKE :search)',
+        '(event.title LIKE :search OR event.description LIKE :search OR event.location LIKE :search)',
         {
           search: `%${search}%`,
         },

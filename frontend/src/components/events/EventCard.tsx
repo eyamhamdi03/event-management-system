@@ -8,7 +8,7 @@ import {
   CardFooter,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, Users, Eye, UserCheck } from 'lucide-react'
+import { Calendar, MapPin, Users, Eye, UserCheck, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import type { Event } from '@/hooks/useEventsGraphQL'
@@ -17,6 +17,7 @@ type EventCardProps = {
   event: Event
   onView?: (event: Event) => void
   onRegister?: (event: Event) => void
+  onDelete?: (event: Event) => void
   showActions?: boolean
 }
 
@@ -24,6 +25,7 @@ export default function EventCard({
   event,
   onView,
   onRegister,
+  onDelete,
   showActions = true
 }: EventCardProps) {
   const formattedDate = event.eventDate
@@ -106,9 +108,7 @@ export default function EventCard({
             </Badge>
           )}
         </div>
-      </CardContent>
-
-      {showActions && (
+      </CardContent>      {showActions && (
         <CardFooter className="pt-4 gap-2">
           {onView && (
             <Button
@@ -130,6 +130,18 @@ export default function EventCard({
             >
               <UserCheck className="h-4 w-4" />
               S'inscrire
+            </Button>
+          )}
+
+          {onDelete && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => onDelete(event)}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
             </Button>
           )}
         </CardFooter>

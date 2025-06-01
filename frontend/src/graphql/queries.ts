@@ -14,11 +14,11 @@ export const EVENT_FRAGMENT = gql`
     updatedAt
     currentParticipants
     isFull
-    isAvailable
-    category {
+    isAvailable    category {
       id
       name
-    }    host {
+    }
+    host {
       id
       fullName
       email

@@ -70,12 +70,11 @@ export default function MyEventsList() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {events.map((event) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">              {events.map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}
-                  onDelete={() => handleDelete(event.id)}
+                  onDelete={(event) => handleDelete(event.id)}
                 />
               ))}
             </div>

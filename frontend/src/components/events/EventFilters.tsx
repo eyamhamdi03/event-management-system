@@ -15,7 +15,6 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { X, Search, Filter, Calendar as CalendarIcon, SortAsc, SortDesc } from 'lucide-react'
 import { format } from 'date-fns'
@@ -54,8 +53,7 @@ export default function EventFilters({
             page: 1,
             limit: filter.limit || 12,
             sortBy: 'EVENT_DATE',
-            sortOrder: 'ASC'
-        })
+            sortOrder: 'ASC'        })
     }
 
     const hasActiveFilters = Boolean(
@@ -65,17 +63,6 @@ export default function EventFilters({
         filter.endDate ||
         filter.upcoming
     )
-
-    const getSortLabel = () => {
-        const sortLabels = {
-            TITLE: 'Titre',
-            EVENT_DATE: 'Date',
-            LOCATION: 'Lieu',
-            CREATED_AT: 'Création',
-            PARTICIPANT_COUNT: 'Participants'
-        }
-        return sortLabels[filter.sortBy || 'EVENT_DATE']
-    }
 
     return (
         <div className="space-y-4 p-4 bg-white rounded-lg shadow-sm border">
@@ -137,16 +124,16 @@ export default function EventFilters({
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Category Filter */}
                         <div className="space-y-2">
-                            <Label>Catégorie</Label>
-                            <Select
-                                value={filter.category || ''}
-                                onValueChange={(value) => updateFilter({ category: value || undefined })}
+                            <Label>Catégorie</Label>                            <Select
+                                value={filter.category || 'all'}
+                                onValueChange={(value) => updateFilter({ category: value === 'all' ? undefined : value })}
+                                disabled={isLoading}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Toutes les catégories" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Toutes les catégories</SelectItem>
+                                    <SelectItem value="all">Toutes les catégories</SelectItem>
                                     {categories.map((category) => (
                                         <SelectItem key={category.id} value={category.name}>
                                             {category.name}
