@@ -6,12 +6,7 @@ import { CategoryModule } from '../category/category.module';
 import { GraphQLService } from './graphql.service';
 
 @Module({
-  imports: [
-    EventModule,
-    UserModule,
-    RegistrationModule,
-    CategoryModule,
-  ],
+  imports: [EventModule, UserModule, RegistrationModule, CategoryModule],
   providers: [GraphQLService],
   exports: [GraphQLService],
 })

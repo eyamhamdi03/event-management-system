@@ -6,17 +6,12 @@ import { EventModule } from './event/event.module';
 import { RegistrationModule } from './registration/registration.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { User } from './user/entities/user.entity';
-import { Event } from './event/entities/event.entity';
-import { Registration } from './registration/entities/registration.entity';
 import { CategoryModule } from './category/category.module';
 import * as dotenv from 'dotenv';
-import { Category } from './category/entities/category.entity';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
 import { typeOrmConfig } from './ormconfig';
-import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from './graphql/graphql.module';
 
 import { QrCodeModule } from './qrcode/qrcode.module';
@@ -51,5 +46,4 @@ dotenv.config();
     },
   ],
 })
-export class AppModule { }
-
+export class AppModule {}

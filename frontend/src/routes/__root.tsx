@@ -60,7 +60,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
   notFoundComponent: () => <NotFoundComponent />,
 
-
   component: () => (
     <RootDocument>
       <AuthProvider>

@@ -53,26 +53,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     let cancelled = false
     setIsLoading(true)
-      ; (async () => {
-        try {
-          const currentUser = await api<User>('/user/me', 'GET', undefined, token)
-          if (!cancelled) {
-            setUser(currentUser)
-            setIsLoading(false)
-          }
-        } catch (err) {
-          console.error('Failed to load current user:', err)
-          if (!cancelled) {
-            setToken(null)
-            setUser(null)
-            setIsLoading(false)
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('authToken')
-              localStorage.removeItem('user')
-            }
+    ;(async () => {
+      try {
+        const currentUser = await api<User>('/user/me', 'GET', undefined, token)
+        if (!cancelled) {
+          setUser(currentUser)
+          setIsLoading(false)
+        }
+      } catch (err) {
+        console.error('Failed to load current user:', err)
+        if (!cancelled) {
+          setToken(null)
+          setUser(null)
+          setIsLoading(false)
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('authToken')
+            localStorage.removeItem('user')
           }
         }
-      })()
+      }
+    })()
 
     return () => {
       cancelled = true
@@ -91,7 +91,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      const currentUser = await api<User>('/user/me', 'GET', undefined, data.access_token)
+      const currentUser = await api<User>(
+        '/user/me',
+        'GET',
+        undefined,
+        data.access_token,
+      )
       setUser(currentUser)
       if (typeof window !== 'undefined') {
         localStorage.setItem('user', JSON.stringify(currentUser))
@@ -127,7 +132,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isAuthenticated: !!token,
+        isLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>

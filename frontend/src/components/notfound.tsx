@@ -20,9 +20,7 @@ export default function NotFoundComponent() {
           </p>
         </div>
         <Button asChild>
-          <Link to="/">
-            Return to website
-          </Link>
+          <Link to="/">Return to website</Link>
         </Button>
       </div>
     </div>

@@ -23,7 +23,11 @@ function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (payload: { email: string; password: string }) => {
-      const response = await api<{ access_token: string }>('/auth/login', 'POST', payload)
+      const response = await api<{ access_token: string }>(
+        '/auth/login',
+        'POST',
+        payload,
+      )
       if (!response.access_token) {
         throw new Error('No access token received')
       }

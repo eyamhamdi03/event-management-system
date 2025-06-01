@@ -17,17 +17,26 @@ function HomePage() {
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
               Manage Events
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"> Effortlessly</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                {' '}
+                Effortlessly
+              </span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Create, organize, and manage live events with real-time discussions,
-              interactive Q&A sessions, and seamless participant engagement.
+              Create, organize, and manage live events with real-time
+              discussions, interactive Q&A sessions, and seamless participant
+              engagement.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="text-lg px-8 py-3">
                 <Link to="/auth/signup/page">Get Started</Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-8 py-3">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="text-lg px-8 py-3"
+              >
                 <Link to="/auth/login/page">Sign In</Link>
               </Button>
             </div>
@@ -43,8 +52,8 @@ function HomePage() {
               Everything You Need to Host Amazing Events
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              From live discussions to real-time notifications, our platform provides
-              all the tools you need for successful event management.
+              From live discussions to real-time notifications, our platform
+              provides all the tools you need for successful event management.
             </p>
           </div>
 
@@ -103,8 +112,8 @@ function HomePage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Set event locations and provide detailed venue information
-                  for both online and offline events.
+                  Set event locations and provide detailed venue information for
+                  both online and offline events.
                 </p>
               </CardContent>
             </Card>
@@ -170,8 +179,8 @@ function HomePage() {
               Built with Modern Technologies
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our platform leverages cutting-edge technologies to deliver
-              a fast, reliable, and scalable event management experience.
+              Our platform leverages cutting-edge technologies to deliver a
+              fast, reliable, and scalable event management experience.
             </p>
           </div>
 
@@ -211,14 +220,19 @@ function HomePage() {
             Ready to Create Your First Event?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join thousands of organizers who trust our platform to manage their events
-            and engage with their audiences in real-time.
+            Join thousands of organizers who trust our platform to manage their
+            events and engage with their audiences in real-time.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="text-lg px-8 py-3">
               <Link to="/event/add/page">Create Event</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-3">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-3"
+            >
               <Link to="/auth/signup/page">Sign Up Free</Link>
             </Button>
           </div>
@@ -230,7 +244,9 @@ function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <h3 className="text-2xl font-bold mb-4">Event Management System</h3>
+              <h3 className="text-2xl font-bold mb-4">
+                Event Management System
+              </h3>
               <p className="text-gray-400 max-w-md">
                 A comprehensive platform for creating and managing live events
                 with real-time interactions and seamless user experience.
@@ -239,9 +255,21 @@ function HomePage() {
             <div>
               <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link to="/auth/signup/page" className="hover:text-white">Sign Up</Link></li>
-                <li><Link to="/auth/login/page" className="hover:text-white">Sign In</Link></li>
-                <li><Link to="/event/add/page" className="hover:text-white">Create Event</Link></li>
+                <li>
+                  <Link to="/auth/signup/page" className="hover:text-white">
+                    Sign Up
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/auth/login/page" className="hover:text-white">
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/event/add/page" className="hover:text-white">
+                    Create Event
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
@@ -255,7 +283,10 @@ function HomePage() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Event Management System. Built by INSAT Software Engineering Students.</p>
+            <p>
+              &copy; 2024 Event Management System. Built by INSAT Software
+              Engineering Students.
+            </p>
           </div>
         </div>
       </footer>

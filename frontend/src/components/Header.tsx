@@ -38,11 +38,15 @@ export default function Header() {
                 Browse Events
               </Link>
             </div>
-          </nav>          {/* Action Buttons */}
+          </nav>{' '}
+          {/* Action Buttons */}
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
               <Button asChild variant="outline" size="sm">
-                <Link to="/event/add/page" className="flex items-center space-x-2">
+                <Link
+                  to="/event/add/page"
+                  className="flex items-center space-x-2"
+                >
                   <PlusCircle className="h-4 w-4" />
                   <span>Create Event</span>
                 </Link>
@@ -67,7 +71,10 @@ export default function Header() {
             ) : (
               <>
                 <Button asChild variant="ghost" size="sm">
-                  <Link to="/auth/login/page" className="flex items-center space-x-2">
+                  <Link
+                    to="/auth/login/page"
+                    className="flex items-center space-x-2"
+                  >
                     <User className="h-4 w-4" />
                     <span>Sign In</span>
                   </Link>

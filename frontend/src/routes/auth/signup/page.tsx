@@ -25,12 +25,12 @@ function SignupPage() {
       console.log('Registration successful:', data)
       // Navigate to login page regardless of email send status
       navigate({
-        to: '/auth/login/page'
+        to: '/auth/login/page',
       })
     },
     onError: (error) => {
       console.error('Registration failed:', error)
-    }
+    },
   })
 
   return (
