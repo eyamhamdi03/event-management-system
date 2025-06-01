@@ -13,6 +13,9 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as OrganizerOrganizerIdEventsImport } from './routes/organizer/$organizerId/events'
+import { Route as EventDetailsPageImport } from './routes/event/details/page'
+import { Route as EventAddPageImport } from './routes/event/add/page'
+import { Route as CategoryAddPageImport } from './routes/category/add/page'
 import { Route as AuthSignupPageImport } from './routes/auth/signup/page'
 import { Route as AuthLoginPageImport } from './routes/auth/login/page'
 
@@ -31,6 +34,24 @@ const OrganizerOrganizerIdEventsRoute = OrganizerOrganizerIdEventsImport.update(
     getParentRoute: () => rootRoute,
   } as any,
 )
+
+const EventDetailsPageRoute = EventDetailsPageImport.update({
+  id: '/event/details/page',
+  path: '/event/details/page',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EventAddPageRoute = EventAddPageImport.update({
+  id: '/event/add/page',
+  path: '/event/add/page',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CategoryAddPageRoute = CategoryAddPageImport.update({
+  id: '/category/add/page',
+  path: '/category/add/page',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AuthSignupPageRoute = AuthSignupPageImport.update({
   id: '/auth/signup/page',
@@ -69,6 +90,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupPageImport
       parentRoute: typeof rootRoute
     }
+    '/category/add/page': {
+      id: '/category/add/page'
+      path: '/category/add/page'
+      fullPath: '/category/add/page'
+      preLoaderRoute: typeof CategoryAddPageImport
+      parentRoute: typeof rootRoute
+    }
+    '/event/add/page': {
+      id: '/event/add/page'
+      path: '/event/add/page'
+      fullPath: '/event/add/page'
+      preLoaderRoute: typeof EventAddPageImport
+      parentRoute: typeof rootRoute
+    }
+    '/event/details/page': {
+      id: '/event/details/page'
+      path: '/event/details/page'
+      fullPath: '/event/details/page'
+      preLoaderRoute: typeof EventDetailsPageImport
+      parentRoute: typeof rootRoute
+    }
     '/organizer/$organizerId/events': {
       id: '/organizer/$organizerId/events'
       path: '/organizer/$organizerId/events'
@@ -85,6 +127,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
+  '/category/add/page': typeof CategoryAddPageRoute
+  '/event/add/page': typeof EventAddPageRoute
+  '/event/details/page': typeof EventDetailsPageRoute
   '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
 }
 
@@ -92,6 +137,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
+  '/category/add/page': typeof CategoryAddPageRoute
+  '/event/add/page': typeof EventAddPageRoute
+  '/event/details/page': typeof EventDetailsPageRoute
   '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
 }
 
@@ -100,6 +148,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
+  '/category/add/page': typeof CategoryAddPageRoute
+  '/event/add/page': typeof EventAddPageRoute
+  '/event/details/page': typeof EventDetailsPageRoute
   '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
 }
 
@@ -109,18 +160,27 @@ export interface FileRouteTypes {
     | '/'
     | '/auth/login/page'
     | '/auth/signup/page'
+    | '/category/add/page'
+    | '/event/add/page'
+    | '/event/details/page'
     | '/organizer/$organizerId/events'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth/login/page'
     | '/auth/signup/page'
+    | '/category/add/page'
+    | '/event/add/page'
+    | '/event/details/page'
     | '/organizer/$organizerId/events'
   id:
     | '__root__'
     | '/'
     | '/auth/login/page'
     | '/auth/signup/page'
+    | '/category/add/page'
+    | '/event/add/page'
+    | '/event/details/page'
     | '/organizer/$organizerId/events'
   fileRoutesById: FileRoutesById
 }
@@ -129,6 +189,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthLoginPageRoute: typeof AuthLoginPageRoute
   AuthSignupPageRoute: typeof AuthSignupPageRoute
+  CategoryAddPageRoute: typeof CategoryAddPageRoute
+  EventAddPageRoute: typeof EventAddPageRoute
+  EventDetailsPageRoute: typeof EventDetailsPageRoute
   OrganizerOrganizerIdEventsRoute: typeof OrganizerOrganizerIdEventsRoute
 }
 
@@ -136,6 +199,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthLoginPageRoute: AuthLoginPageRoute,
   AuthSignupPageRoute: AuthSignupPageRoute,
+  CategoryAddPageRoute: CategoryAddPageRoute,
+  EventAddPageRoute: EventAddPageRoute,
+  EventDetailsPageRoute: EventDetailsPageRoute,
   OrganizerOrganizerIdEventsRoute: OrganizerOrganizerIdEventsRoute,
 }
 
@@ -152,6 +218,9 @@ export const routeTree = rootRoute
         "/",
         "/auth/login/page",
         "/auth/signup/page",
+        "/category/add/page",
+        "/event/add/page",
+        "/event/details/page",
         "/organizer/$organizerId/events"
       ]
     },
@@ -163,6 +232,15 @@ export const routeTree = rootRoute
     },
     "/auth/signup/page": {
       "filePath": "auth/signup/page.tsx"
+    },
+    "/category/add/page": {
+      "filePath": "category/add/page.tsx"
+    },
+    "/event/add/page": {
+      "filePath": "event/add/page.tsx"
+    },
+    "/event/details/page": {
+      "filePath": "event/details/page.tsx"
     },
     "/organizer/$organizerId/events": {
       "filePath": "organizer/$organizerId/events.tsx"

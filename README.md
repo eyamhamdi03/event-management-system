@@ -14,7 +14,6 @@ A live event management platform where organizers can create online events with 
 ### Technologies
 
 - **Front-End**: React.js
-- **Database**: PostgreSQL
 - **Back-End**: NestJS
 
 ### Future Features

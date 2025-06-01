@@ -14,6 +14,7 @@ import { DeleteUserDto } from './dto/delete-user.dto';
 import { Like } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { SocialProvider } from '../auth/socialProviders.enum';
+import { JwtPayload } from 'jsonwebtoken';
 @Injectable()
 export class UserService {
   constructor(
@@ -151,7 +152,6 @@ export class UserService {
     }
     return user;
   }
-
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
 
