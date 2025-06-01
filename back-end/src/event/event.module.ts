@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { Event } from './entities/event.entity';
 import { User } from '../user/entities/user.entity';
 import { Category } from '../category/entities/category.entity';
@@ -13,6 +14,8 @@ import { MailModule } from '../mail/mail.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Event, User, Category, Registration]),
+    RegistrationModule,
+    ConfigModule,
     AuthModule,
     forwardRef(() => RegistrationModule),
     MailModule,
