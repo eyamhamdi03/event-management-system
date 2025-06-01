@@ -4,9 +4,14 @@ import { EventFilterInput } from './types';
 
 export const resolvers = {
   DateTime: DateTimeResolver,
-
   Query: {
-    events: (_, __, { eventService }) => eventService.findAll(),
+    events: async (_, __, { eventService }) => {
+      const result = await eventService.findAllFilteredForGraphQL();
+      return result.data;
+    },
+    eventsWithFilter: async (_, { filter }, { eventService }) => {
+      return eventService.findAllFilteredForGraphQL(filter);
+    },
     event: (_, { id }, { eventService }) => eventService.findById(id),
     filterEvents: async (_: any, { filter }: { filter: EventFilterInput }, { eventService }) => {
       return eventService.filterEvents(filter);
@@ -26,43 +31,62 @@ export const resolvers = {
       return event;
     },
     updateEvent: async (_, { id, input }, { eventService, pubSub }) => {
-        const updatedEvent = await eventService.update(id, input);
-        await pubSub.publish('EVENT_UPDATED', { eventUpdated: updatedEvent });
-        return updatedEvent;
+      const updatedEvent = await eventService.update(id, input);
+      await pubSub.publish('EVENT_UPDATED', { eventUpdated: updatedEvent });
+      return updatedEvent;
     },
 
     deleteEvent: async (_, { id }, { eventService, pubSub }) => {
-        await eventService.delete(id);
-        await pubSub.publish('EVENT_DELETED', { eventDeleted: id });
-        return id;
+      await eventService.delete(id);
+      await pubSub.publish('EVENT_DELETED', { eventDeleted: id });
+      return id;
     },
     registerForEvent: async (_, { eventId }, { registrationService, user, pubSub }) => {
-      const registration = await registrationService.create({ 
-        eventId, 
-        userId: user.id 
+      const registration = await registrationService.create({
+        eventId,
+        userId: user.id
       });
-      await pubSub.publish('REGISTRATION_CREATED', { 
+      await pubSub.publish('REGISTRATION_CREATED', {
         registrationCreated: registration,
-        eventId 
+        eventId
       });
       return registration;
     },
     createUser: (_, { input }, { userService }) => userService.create(input),
     createCategory: (_, { name }, { categoryService }) => categoryService.create({ name }),
   },
-
   Event: {
-    organizer: (parent, _, { userService }) => userService.findById(parent.organizerId),
-    categories: (parent, _, { categoryService }) => 
-      categoryService.findByEventId(parent.id),
-    registrations: (parent, _, { registrationService }) => 
-      registrationService.findByEventId(parent.id),
+    organizer: (parent) => parent.host || parent.organizer,
+    host: (parent) => parent.host || parent.organizer,
+    category: (parent) => parent.category,
+    registrations: (parent) => parent.registrations || [],
+    currentParticipants: (parent) => {
+      if (parent.currentParticipants !== undefined) {
+        return parent.currentParticipants;
+      }
+      return parent.registrations?.length || 0;
+    },
+    isFull: (parent) => {
+      if (parent.isFull !== undefined) {
+        return parent.isFull;
+      }
+      const currentParticipants = parent.registrations?.length || 0;
+      return parent.participantLimit ? currentParticipants >= parent.participantLimit : false;
+    },
+    isAvailable: (parent) => {
+      if (parent.isAvailable !== undefined) {
+        return parent.isAvailable;
+      }
+      const currentParticipants = parent.registrations?.length || 0;
+      const isFull = parent.participantLimit ? currentParticipants >= parent.participantLimit : false;
+      return !isFull;
+    },
   },
 
   User: {
-    organizedEvents: (parent, _, { eventService }) => 
+    organizedEvents: (parent, _, { eventService }) =>
       eventService.findByOrganizerId(parent.id),
-    registrations: (parent, _, { registrationService }) => 
+    registrations: (parent, _, { registrationService }) =>
       registrationService.findByUserId(parent.id),
   },
 
@@ -75,14 +99,14 @@ export const resolvers = {
     events: (parent, _, { eventService }) => eventService.findByCategoryId(parent.id),
   },
   Subscription: {
-  eventCreated: {
-    subscribe: (_, __, { pubSub }) => pubSub.asyncIterator('EVENT_CREATED'),
+    eventCreated: {
+      subscribe: (_, __, { pubSub }) => pubSub.asyncIterator('EVENT_CREATED'),
+    },
+    eventUpdated: {
+      subscribe: (_, __, { pubSub }) => pubSub.asyncIterator('EVENT_UPDATED'),
+    },
+    eventDeleted: {
+      subscribe: (_, __, { pubSub }) => pubSub.asyncIterator('EVENT_DELETED'),
+    },
   },
-  eventUpdated: {
-    subscribe: (_, __, { pubSub }) => pubSub.asyncIterator('EVENT_UPDATED'),
-  },
-  eventDeleted: {
-    subscribe: (_, __, { pubSub }) => pubSub.asyncIterator('EVENT_DELETED'),
-  },
-},
 };

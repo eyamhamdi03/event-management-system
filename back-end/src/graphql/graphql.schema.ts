@@ -4,15 +4,21 @@ export const typeDefs = `  type Event {
     description: String!
     eventDate: DateTime!
     location: String!
+    participantLimit: Int
+    validated: Boolean!
+    createdAt: DateTime!
+    updatedAt: DateTime!
     organizer: User!
-    categories: [Category!]!
+    host: User!
+    category: Category!
     registrations: [Registration!]!
-
+    currentParticipants: Int!
+    isFull: Boolean!
+    isAvailable: Boolean!
   }
-
   type User {
     id: ID!
-    fullname: String!
+    fullName: String
     email: String!
     role: UserRole!
     organizedEvents: [Event!]!
@@ -46,9 +52,9 @@ export const typeDefs = `  type Event {
   }
 
   scalar DateTime
-
   type Query {
     events: [Event!]!
+    eventsWithFilter(filter: EventsFilterInput): EventsResult!
     event(id: ID!): Event
     users: [User!]!
     user(id: ID!): User
@@ -57,6 +63,14 @@ export const typeDefs = `  type Event {
     categories: [Category!]!
     category(id: ID!): Category
     filterEvents(filter: EventFilterInput): [Event!]!
+  }
+
+  type EventsResult {
+    data: [Event!]!
+    total: Int!
+    page: Int!
+    limit: Int!
+    totalPages: Int!
   }
 
   type Mutation {
@@ -95,8 +109,7 @@ export const typeDefs = `  type Event {
     endDate: DateTime
     location: String
     categoryIds: [ID!]
-  }
-  input EventFilterInput {
+  }  input EventFilterInput {
   id: ID
   titleContains: String
   dateFrom: DateTime
@@ -106,4 +119,31 @@ export const typeDefs = `  type Event {
   minAvailableSpots: Int
   maxParticipants: Int
 }
+
+  input EventsFilterInput {
+    search: String
+    category: String
+    date: String
+    startDate: String
+    endDate: String
+    hostId: String
+    upcoming: Boolean
+    page: Int
+    limit: Int
+    sortBy: EventSortField
+    sortOrder: SortOrder
+  }
+
+  enum EventSortField {
+    TITLE
+    EVENT_DATE
+    LOCATION
+    CREATED_AT
+    PARTICIPANT_COUNT
+  }
+
+  enum SortOrder {
+    ASC
+    DESC
+  }
 `;

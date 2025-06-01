@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useNavigate } from '@tanstack/react-router'
 import { useDeleteEvent } from '@/hooks/useDeleteEvent'
 
-export default function EventsList() {
+export default function MyEventsList() {
   const navigate = useNavigate()
 
   const { data: events = [], isLoading, refetch } = useEvents()

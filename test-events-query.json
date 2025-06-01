@@ -1,0 +1,1 @@
+{"query":"{ events { id title description eventDate location organizer { fullName } category { name } } }"}

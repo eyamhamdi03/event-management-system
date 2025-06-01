@@ -29,7 +29,7 @@ export class EventService {
     @InjectRepository(Registration)
     private registrationRepository: Repository<Registration>,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
   private eventCapacities: Map<string, number> = new Map();
   async getEvents(): Promise<any[]> {
     const events = await this.eventRepository.find({
@@ -298,5 +298,126 @@ export class EventService {
       },
       relations: ['registrations'],
     });
+  }
+
+  async findAllFilteredForGraphQL(
+    filter: any = {},
+  ): Promise<{ data: Event[]; total: number; page: number; limit: number; totalPages: number }> {
+    const {
+      search,
+      category,
+      date,
+      startDate,
+      endDate,
+      hostId,
+      upcoming,
+      page = 1,
+      limit = 10,
+      sortBy = 'EVENT_DATE',
+      sortOrder = 'ASC',
+    } = filter;
+
+    const query = this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.host', 'host')
+      .leftJoinAndSelect('event.category', 'category')
+      .leftJoinAndSelect('event.registrations', 'registrations')
+      .leftJoinAndSelect('registrations.user', 'registrationUser');
+
+    // Apply filters
+    if (category) {
+      query.andWhere('category.name ILIKE :category', { category: `%${category}%` });
+    }
+
+    if (search) {
+      query.andWhere(
+        '(event.title ILIKE :search OR event.description ILIKE :search OR event.location ILIKE :search)',
+        {
+          search: `%${search}%`,
+        },
+      );
+    }
+
+    if (date) {
+      query.andWhere('DATE(event.eventDate) = :date', { date });
+    }
+
+    if (startDate && endDate) {
+      query.andWhere('event.eventDate BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      });
+    }
+
+    if (upcoming === true) {
+      query.andWhere('event.eventDate >= :today', { today: new Date() });
+    }
+
+    if (hostId) {
+      query.andWhere('host.id = :hostId', { hostId });
+    }
+
+    // Apply sorting
+    const sortField = this.getSortField(sortBy);
+    const sortDirection = sortOrder.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
+    if (sortBy === 'PARTICIPANT_COUNT') {
+      // For participant count, we need to use a subquery
+      query.addSelect('COUNT(registrations.id)', 'participantCount');
+      query.groupBy('event.id, host.id, category.id');
+      query.orderBy('participantCount', sortDirection);
+    } else {
+      query.orderBy(sortField, sortDirection);
+    }
+
+    // Add secondary sort by eventDate for consistency
+    if (sortBy !== 'EVENT_DATE') {
+      query.addOrderBy('event.eventDate', 'ASC');
+    }
+
+    // Pagination
+    const take = Math.min(Math.max(parseInt(String(limit)), 1), 100); // Max 100 items per page
+    const skip = (Math.max(parseInt(String(page)), 1) - 1) * take;
+
+    const [data, total] = await query
+      .take(take)
+      .skip(skip)
+      .getManyAndCount();
+
+    // Calculate computed fields
+    const enhancedData = data.map((event) => {
+      const currentParticipants = event.registrations?.length || 0;
+      const isFull = event.participantLimit ? currentParticipants >= event.participantLimit : false;
+      const isAvailable = !isFull;
+
+      return {
+        ...event,
+        currentParticipants,
+        isFull,
+        isAvailable,
+      };
+    });
+
+    const totalPages = Math.ceil(total / take);
+
+    return {
+      data: enhancedData,
+      total,
+      page: Math.max(parseInt(String(page)), 1),
+      limit: take,
+      totalPages,
+    };
+  }
+
+  private getSortField(sortBy: string): string {
+    const sortFieldMap = {
+      'TITLE': 'event.title',
+      'EVENT_DATE': 'event.eventDate',
+      'LOCATION': 'event.location',
+      'CREATED_AT': 'event.createdAt',
+      'PARTICIPANT_COUNT': 'participantCount', // Handled separately
+    };
+
+    return sortFieldMap[sortBy] || 'event.eventDate';
   }
 }
