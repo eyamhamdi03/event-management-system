@@ -6,7 +6,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Registration } from '../../registration/entities/registration.entity';
-import { TimestampEntities } from 'src/generics/timestamp.entities';
+import { TimestampEntities } from '../../generics/timestamp.entities';
 import { User } from '../../user/entities/user.entity';
 import { Category } from '../../category/entities/category.entity';
 
@@ -37,4 +37,7 @@ export class Event extends TimestampEntities {
   validated: boolean;
   @ManyToOne(() => Category, (category) => category.events, { eager: true })
   category: Category;
+
+  @Column({ type: 'int', nullable: true })
+  participantLimit: number;
 }

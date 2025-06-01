@@ -1,7 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
-import { Repository } from 'typeorm';
+
+import { Repository, Between, MoreThanOrEqual } from 'typeorm';
+import { CreateEventDto } from './dto/create-event.dto';
+import { User } from '../user/entities/user.entity';
+import { Category } from '../category/entities/category.entity';
+import { EventFilterInput } from './dto/filter-event.input';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { MailService } from '../mail/mail.service';
+import { Registration } from 'src/registration/entities/registration.entity';
+
 import { FilterEventsDto } from './dto/filter-events.dto';
 import NotificationsService from '../notifications/notifications.service';
 import { User } from '../user/entities/user.entity';
@@ -15,10 +28,28 @@ export class EventService {
     @InjectRepository(User)
     private UserRepository: Repository<User>,
     private notifications: NotificationsService,
+     @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
+    private readonly mailService: MailService,
+
   ) {}
+    private eventCapacities: Map<string, number> = new Map();
+
   async getEvents(): Promise<Event[]> {
-    return await this.EventRepository.find();
-  }
+     const events = await this.EventRepository.find({
+      relations: ['registrations'],
+    });
+    return events.map((event) => {
+      const currentParticipants = event.registrations.length;
+      const isFull = currentParticipants >= event.participantLimit;
+      return {
+        ...event,
+        currentParticipants,
+        isFull,
+      };
+  });}
 
   private async notifyRegisteredUsers(
     event: Event,
@@ -66,16 +97,28 @@ export class EventService {
     }
     return eventCreated;
   }
-  async getEventById(id: string): Promise<Event> {
-    const event = await this.EventRepository.findOne({ where: { id } });
-    if (!event) throw new NotFoundException(`Event with ID ${id} not found`);
-    return event;
+  async getEventById(id: string): Promise<any> {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['registrations'],
+    });
+    if (!event)
+      throw new NotFoundException('Event with this id ${id} not found');
+
+    const currentParticipants = event.registrations.length;
+    const isFull = currentParticipants >= event.participantLimit;
+
+    return {
+      ...event,
+      currentParticipants,
+      isFull,
+    };
   }
 
   async replaceEvent(id: string, newEvent: Event): Promise<Event> {
     const existing = await this.getEventById(id);
     const updated = { ...existing, ...newEvent, id: existing.id };
-    return await this.EventRepository.save(updated);
+    return await this.eventRepository.save(updated);
   }
   async updateEvent(id: string, partialEvent: Partial<Event>): Promise<Event> {
     await this.EventRepository.update(id, partialEvent);
@@ -89,9 +132,15 @@ export class EventService {
 
     return updatedEvent;
   }
+  async findByHostId(userId: string): Promise<Event[]> {
+    return this.eventRepository.find({
+      where: { host: { id: userId } },
+      order: { eventDate: 'ASC' },
+    });
+  }
 
   async deleteEvent(id: string): Promise<void> {
-    const result = await this.EventRepository.delete(id);
+    const result = await this.eventRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
@@ -107,7 +156,7 @@ export class EventService {
   }
 
   async restoreEvent(id: string): Promise<void> {
-    const result = await this.EventRepository.restore(id);
+    const result = await this.eventRepository.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException(
         `Event with ID ${id} not found or not soft deleted`,
@@ -124,8 +173,33 @@ export class EventService {
       );
     }
   }
+  findAll(): Promise<Event[]> {
+    return this.eventRepository.find({
+      relations: ['organizer', 'categories', 'registrations'],
+    });
+  }
+
+  async findById(id: string): Promise<Event> {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['category', 'registrations'],
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${id} not found`);
+    }
+    return event;
+  }
+
+  findByCategoryId(categoryId: string): Promise<Event[]> {
+    return this.eventRepository.find({
+      where: { category: { id: categoryId } },
+    });
+  }
 
   //////filter////
+  async findAllFiltered(
+    filter: FilterEventsDto,
+  ): Promise<{ data: Event[]; total: number }> {
   async findAllFiltered(
     filter: FilterEventsDto,
   ): Promise<{ data: Event[]; total: number }> {
@@ -141,7 +215,8 @@ export class EventService {
       limit = '10',
     } = filter;
 
-    const query = this.EventRepository.createQueryBuilder('event')
+    const query = this.eventRepository
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations');
@@ -157,11 +232,18 @@ export class EventService {
           search: `%${search}%`,
         },
       );
+      query.andWhere(
+        '(event.title ILIKE :search OR event.description ILIKE :search)',
+        {
+          search: `%${search}%`,
+        },
+      );
     }
 
     if (date) {
       query.andWhere('DATE(event.eventDate) = :date', { date });
     }
+
 
     if (startDate && endDate) {
       query.andWhere('event.eventDate BETWEEN :startDate AND :endDate', {
@@ -169,6 +251,7 @@ export class EventService {
         endDate,
       });
     }
+
 
     if (upcoming === 'true') {
       query.andWhere('event.eventDate >= :today', { today: new Date() });

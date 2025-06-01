@@ -6,22 +6,36 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { RegistrationService } from './registration.service';
 import { Registration } from './entities/registration.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { Role } from 'src/auth/roles.enum';
+import { Role } from '../auth/roles.enum';
 import { RegistrationResponseDto } from './dto/registration-response.dto';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
+import { MailService } from 'src/mail/mail.service';
+import { Response } from 'express';
+import { Parser } from 'json2csv';
+import { RegistrationExportDto } from './dto/registration-export.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('registration')
 export class RegistrationController {
-  constructor(private readonly registrationService: RegistrationService) {}
+  constructor(
+    private readonly registrationService: RegistrationService,
+    private readonly mailService: MailService,
+  ) {}
+
+  @Get('scan/:id')
+  async scanRegistration(@Param('id') id: string, @Res() res: Response) {
+    const html = await this.registrationService.handleQrScan(id);
+    res.setHeader('Content-Type', 'text/html');
+    return res.send(html);
+  }
 
   @Roles(Role.Admin)
   @Get()
@@ -37,15 +51,16 @@ export class RegistrationController {
     return await this.registrationService.getRegistrationsForEvent(eventId);
   }
 
-  @Roles(Role.Organizer)
   @Post()
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
-  ): Promise<Registration> {
-    return await this.registrationService.registerToEvent(
+  ): Promise<{ registration: Registration }> {
+    const { registration } = await this.registrationService.registerToEvent(
       registrationData.eventId,
       registrationData.userId,
     );
+
+    return { registration };
   }
 
   @Roles(Role.Organizer, Role.User)
@@ -62,9 +77,16 @@ export class RegistrationController {
     );
     return { message: 'Registration cancelled successfully' };
   }
-  @Roles(Role.Organizer)
+
   @Patch('confirm/:id')
   async confirmRegistration(@Param('id') id: string): Promise<Registration> {
     return await this.registrationService.confirmRegistration(id);
+  }
+
+  @Patch(':id/check-in')
+  @Roles(Role.Admin, Role.Organizer)
+  async checkIn(@Param('id') id: string): Promise<{ message: string }> {
+    await this.registrationService.checkInRegistration(id);
+    return { message: 'Participant checked in.' };
   }
 }
