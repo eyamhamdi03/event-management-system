@@ -9,6 +9,13 @@ async function bootstrap() {
 
   const graphqlService = app.get(GraphQLService);
   app.use('/graphql', graphqlService.getHandler());
+  const frontendPort = process.env.Frontend_PORT || 3001;
+
+  app.enableCors({
+    origin: `http://localhost:${frontendPort}`,
+
+    credentials: true,
+  });
   await app.listen(process.env.APP_PORT || 3000);
 }
 bootstrap();

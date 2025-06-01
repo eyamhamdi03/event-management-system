@@ -4,6 +4,8 @@ import {
   IsDate,
   IsOptional,
   IsBoolean,
+  IsInt,
+  Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -32,7 +34,12 @@ export class CreateEventDto {
   @IsOptional()
   @IsBoolean()
   validated?: boolean;
+
   @IsNotEmpty()
   @IsString()
   categoryId: string;
+
+  @IsInt()
+  @Min(1)
+  participantLimit: number;
 }

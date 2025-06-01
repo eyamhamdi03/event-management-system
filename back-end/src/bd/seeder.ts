@@ -11,7 +11,7 @@ export class Seeder {
   constructor(private readonly dataSource: DataSource) {}
 
   async seed() {
-    await this.dataSource.synchronize(true); // WARNING: This will drop all tables!
+    await this.dataSource.synchronize(true); 
 
     // Seed categories
     const categories = await this.seedCategories();

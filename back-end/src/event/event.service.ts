@@ -1,36 +1,62 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
-import { Repository } from 'typeorm';
+import { Repository, Between, MoreThanOrEqual } from 'typeorm';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { CreateEventInput } from './dto/create-event.input';
 import { EventFilterInput } from './dto/filter-event.input';
 import { RegistrationService } from '../registration/registration.service';
+import { CreateEventDto } from './dto/create-event.dto';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { MailService } from '../mail/mail.service';
+import { Registration } from 'src/registration/entities/registration.entity';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
     private EventRepository: Repository<Event>,
-    private readonly registrationService: RegistrationService,
-  ) {}
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
+    private readonly mailService: MailService,
+  ) { }
   private eventCapacities: Map<string, number> = new Map();
-  async getEvents(): Promise<Event[]> {
-    return await this.EventRepository.find();
+  async getEvents(): Promise<any[]> {
+    const events = await this.EventRepository.find({ relations: ['registrations'] });
+    return events.map(event => {
+      const currentParticipants = event.registrations.length;
+      const isFull = currentParticipants >= event.participantLimit;
+      return {
+        ...event,
+        currentParticipants,
+        isFull,
+      };
+    });
   }
   async createEvent(input: CreateEventInput): Promise<Event> {
-  const event = this.EventRepository.create(input);
-  const savedEvent = await this.EventRepository.save(event);
+    const event = this.EventRepository.create(input);
+    const savedEvent = await this.EventRepository.save(event);
 
-  const max = input.maxParticipants ?? 50;
-  this.eventCapacities.set(savedEvent.id, max);
+    const max = input.maxParticipants ?? 50;
+    this.eventCapacities.set(savedEvent.id, max);
 
-  return savedEvent;
-}
-  async getEventById(id: string): Promise<Event> {
-    const event = await this.EventRepository.findOne({ where: { id } });
-    if (!event) throw new NotFoundException(`Event with ID ${id} not found`);
-    return event;
+    return savedEvent;
+  }
+  async getEventById(id: string): Promise<any> {
+    const event = await this.EventRepository.findOne({
+      where: { id },
+      relations: ['registrations'],
+    });
+    if (!event) throw new NotFoundException('Event with this id ${id} not found');
+
+    const currentParticipants = event.registrations.length;
+    const isFull = currentParticipants >= event.participantLimit;
+
+    return {
+      ...event,
+      currentParticipants,
+      isFull,
+    };
   }
 
   async replaceEvent(id: string, newEvent: Event): Promise<Event> {
@@ -62,13 +88,13 @@ export class EventService {
     }
   }
   findAll(): Promise<Event[]> {
-    return this.EventRepository.find({ 
-      relations: ['organizer', 'categories', 'registrations'] 
+    return this.EventRepository.find({
+      relations: ['organizer', 'categories', 'registrations']
     });
   }
 
   async findById(id: string): Promise<Event> {
-    const event = await this.EventRepository.findOne({ 
+    const event = await this.EventRepository.findOne({
       where: { id },
       relations: ['category', 'registrations']
     });
@@ -116,20 +142,17 @@ export class EventService {
     if (date) {
       query.andWhere('DATE(event.eventDate) = :date', { date });
     }
-    
+
     if (startDate && endDate) {
       query.andWhere('event.eventDate BETWEEN :startDate AND :endDate', {
         startDate,
         endDate,
       });
     }
-    
+
     if (upcoming === 'true') {
       query.andWhere('event.eventDate >= :today', { today: new Date() });
     }
-    
-   
-    
 
     if (hostId) {
       query.andWhere('host.id = :hostId', { hostId: parseInt(hostId) });
@@ -147,7 +170,7 @@ export class EventService {
 
     return { data, total };
   }
-    async filterEvents(filter: EventFilterInput): Promise<Event[]> {
+  async filterEvents(filter: EventFilterInput): Promise<Event[]> {
     const events = await this.EventRepository.find({ relations: ['category', 'registrations'] });
 
     const filteredEvents = await Promise.all(
@@ -160,7 +183,7 @@ export class EventService {
 
         if (filter.isAvailable !== undefined) {
           const registrations = event.registrations ?? [];
-          const maxCapacity = this.eventCapacities.get(event.id) ?? 50; 
+          const maxCapacity = this.eventCapacities.get(event.id) ?? 50;
           const isAvailable = registrations.length < maxCapacity;
           if (isAvailable !== filter.isAvailable) return null;
         }
@@ -171,6 +194,44 @@ export class EventService {
 
     return filteredEvents.filter((e): e is Event => e !== null);
   }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async sendEventReminders() {
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const events = await this.EventRepository.find({
+      where: {
+        eventDate: Between(
+          new Date(in24h.getTime() - 30 * 60 * 1000), // 30min window
+          new Date(in24h.getTime() + 30 * 60 * 1000)
+        ),
+      },
+      relations: ['registrations', 'registrations.user'],
+    });
+    for (const event of events) {
+      for (const reg of event.registrations) {
+        await this.mailService.sendEventReminder(
+          reg.user.email,
+          reg.user.fullName,
+          event.title,
+          event.eventDate.toISOString().split('T')[0]
+        );
+      }
+    }
+  }
+
+  async getUpcomingEvents(): Promise<Event[]> {
+    const today = new Date();
+    return this.EventRepository.find({
+      where: {
+        eventDate: MoreThanOrEqual(today),
+      },
+      order: {
+        eventDate: 'ASC',
+      },
+      relations: ['registrations'],
+    });
+  }
 }
-  
+
 

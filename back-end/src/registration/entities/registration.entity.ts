@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Event } from '../../event/entities/event.entity';
-import { TimestampEntities } from 'src/generics/timestamp.entities';
+import { TimestampEntities } from '../../generics/timestamp.entities';
 
 @Entity()
 export class Registration extends TimestampEntities {
@@ -22,4 +22,8 @@ export class Registration extends TimestampEntities {
 
   @Column({ default: false })
   confirmed: boolean;
+
+  @Column({ default: false })
+  checkedIn: boolean;
+
 }
