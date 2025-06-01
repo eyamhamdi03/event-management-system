@@ -17,6 +17,9 @@ import {
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { ChatRoom } from '@/components/ChatRoom'
+import { useAuth } from '@/context/auth-context'
 
 import { useEventById } from '@/hooks/useEventsGraphQL'
 
@@ -27,26 +30,25 @@ export const Route = createFileRoute('/event/$eventId/page')({
 function EventDetailsPage() {
     const { eventId } = Route.useParams()
     const navigate = useNavigate()
+    const { user, token, isAuthenticated } = useAuth()
 
     // TODO: Replace with actual hook once implemented
     const { data: event, isLoading, error } = useEventById(eventId)
 
-    const [isJoiningChat, setIsJoiningChat] = useState(false)
+    const [isChatOpen, setIsChatOpen] = useState(false)
 
     const handleJoinChatRoom = () => {
-        setIsJoiningChat(true)
-        // TODO: Implement chat room logic
-        console.log('Joining chat room for event:', eventId)
+        if (!isAuthenticated) {
+            alert('Vous devez être connecté pour rejoindre le chat.')
+            navigate({ to: '/auth/login/page' })
+            return
+        }
 
-        // Simulate joining process
-        setTimeout(() => {
-            setIsJoiningChat(false)
-            // Here you would typically:
-            // 1. Initialize WebSocket connection
-            // 2. Navigate to chat interface or open chat modal
-            // 3. Show chat UI
-            alert('Chat room feature will be implemented with WebSocket logic!')
-        }, 1000)
+        setIsChatOpen(true)
+    }
+
+    const handleCloseChatRoom = () => {
+        setIsChatOpen(false)
     }
 
     const handleRegisterForEvent = () => {
@@ -228,19 +230,17 @@ function EventDetailsPage() {
                                     </Button>
                                 )}
 
-                                <Separator />
-
-                                {/* Chat Room Button */}
+                                <Separator />                                {/* Chat Room Button */}
                                 <div className="space-y-2">
                                     <h4 className="font-medium text-sm text-gray-700">Discussion en direct</h4>
                                     <Button
                                         variant="outline"
                                         className="w-full gap-2"
                                         onClick={handleJoinChatRoom}
-                                        disabled={isJoiningChat}
+                                        disabled={!isAuthenticated}
                                     >
                                         <MessageCircle className="h-4 w-4" />
-                                        {isJoiningChat ? 'Connexion...' : 'Rejoindre le chat'}
+                                        {!isAuthenticated ? 'Connectez-vous pour chatter' : 'Rejoindre le chat'}
                                     </Button>
                                     <p className="text-xs text-gray-500">
                                         Discutez avec les autres participants de l'événement
@@ -275,9 +275,22 @@ function EventDetailsPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                    </div>                </div>
+            </div>            {/* Enhanced Chat Modal */}
+            <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+                <DialogContent className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 bg-transparent border-0 shadow-2xl">
+                    <div className="h-full w-full bg-white rounded-xl shadow-2xl overflow-hidden">
+                        {isChatOpen && user && token && (
+                            <ChatRoom
+                                eventId={eventId}
+                                token={token}
+                                currentUserId={user.sub}
+                                onClose={handleCloseChatRoom}
+                            />
+                        )}
                     </div>
-                </div>
-            </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Event } from '../../event/entities/event.entity';
 import { MessageReaction } from './message-reaction.entity';
@@ -8,21 +8,27 @@ export class Message {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column('text')
+    @Column({ type: 'text' })
     content: string;
 
-    @ManyToOne(() => User, { eager: true })
+    @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
     user: User;
 
     @ManyToOne(() => Event, { onDelete: 'CASCADE' })
     event: Event;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    @Column({ type: 'uuid' })
+    eventId: string;
+
+    @OneToMany(() => MessageReaction, (reaction) => reaction.message, { cascade: true })
+    reactions: MessageReaction[];
 
     @Column({ default: false })
     isDeleted: boolean;
 
-    @OneToMany(() => MessageReaction, (reaction) => reaction.message, { cascade: true })
-    reactions: MessageReaction[];
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

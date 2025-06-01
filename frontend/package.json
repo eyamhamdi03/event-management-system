@@ -14,8 +14,10 @@
   },
   "dependencies": {
     "@nestjs/graphql": "^13.1.0",
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-scroll-area": "^1.2.9",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slider": "^1.3.5",
@@ -43,6 +45,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.2.0",
     "shadcn-ui": "^0.9.5",
+    "socket.io-client": "^4.8.1",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.0.6",
     "tailwindcss-animate": "^1.0.7",
