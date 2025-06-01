@@ -18,11 +18,11 @@ import { MailService } from '../mail/mail.service';
 @Controller('auth')
 @SkipThrottle() // Skip rate limiting by default for all endpoints
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private configService: ConfigService,
-    private mailService: MailService
-  ) { }
+    constructor(
+      private authService: AuthService,
+      private configService: ConfigService,
+      private mailService: MailService
+    ) { }
 
   @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Post('register')
@@ -71,7 +71,7 @@ export class AuthController {
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
   }
-  //TO DO IMPLEMENT THIS
+
   @Get('google')
   @Public()
   @UseGuards(AuthGuard('google'))
