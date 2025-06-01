@@ -100,7 +100,7 @@ export class EventService {
     return this.getEventById(id);
   }
   async findByHostId(userId: string): Promise<Event[]> {
-    return this.EventRepository.find({
+    return this.eventRepository.find({
       where: { host: { id: userId } },
       order: { eventDate: 'ASC' },
     });

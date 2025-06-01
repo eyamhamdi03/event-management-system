@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 
@@ -39,13 +40,7 @@ export class EventController {
     const user = req.user as { id: string };
     return this.eventService.findByHostId(user.id);
   }
-  @Get('mine')
-  @Roles(Role.Organizer)
-  @Throttle({ default: { limit: 30, ttl: 60 } }) // 30 requests/min
-  async getMyEvents(@Req() req: Request): Promise<Event[]> {
-    const user = req.user as { id: string };
-    return this.eventService.findByHostId(user.id);
-  }
+
   //Get Filter//
 
   @Get('/withFilter')
@@ -117,7 +112,7 @@ export class EventController {
         'User information is missing from request.',
       );
     }
-    await this.eventService.softDeleteEvent(id, userId, userRole);
+    await this.eventService.softRemoveEvent(id);
   }
 
   @Post('restore/:id')
