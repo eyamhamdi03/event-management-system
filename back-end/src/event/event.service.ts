@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Event } from './entities/event.entity';
 import { Repository, Between, MoreThanOrEqual } from 'typeorm';
 import { FilterEventsDto } from './dto/filter-events.dto';
+import { CreateEventInput } from './dto/create-event.input';
+import { EventFilterInput } from './dto/filter-event.input';
+import { RegistrationService } from '../registration/registration.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from '../mail/mail.service';
@@ -16,7 +19,8 @@ export class EventService {
     @InjectRepository(Registration)
     private registrationRepository: Repository<Registration>,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
+  private eventCapacities: Map<string, number> = new Map();
   async getEvents(): Promise<any[]> {
     const events = await this.EventRepository.find({ relations: ['registrations'] });
     return events.map(event => {
@@ -29,9 +33,14 @@ export class EventService {
       };
     });
   }
-  async createEvent(eventDto: CreateEventDto): Promise<Event> {
-    const event = this.EventRepository.create(eventDto);
-    return this.EventRepository.save(event);
+  async createEvent(input: CreateEventInput): Promise<Event> {
+    const event = this.EventRepository.create(input);
+    const savedEvent = await this.EventRepository.save(event);
+
+    const max = input.maxParticipants ?? 50;
+    this.eventCapacities.set(savedEvent.id, max);
+
+    return savedEvent;
   }
   async getEventById(id: string): Promise<any> {
     const event = await this.EventRepository.findOne({
@@ -78,6 +87,28 @@ export class EventService {
       );
     }
   }
+  findAll(): Promise<Event[]> {
+    return this.EventRepository.find({
+      relations: ['organizer', 'categories', 'registrations']
+    });
+  }
+
+  async findById(id: string): Promise<Event> {
+    const event = await this.EventRepository.findOne({
+      where: { id },
+      relations: ['category', 'registrations']
+    });
+    if (!event) {
+      throw new NotFoundException(`Event with ID ${id} not found`);
+    }
+    return event;
+  }
+
+  findByCategoryId(categoryId: string): Promise<Event[]> {
+    return this.EventRepository.find({
+      where: { category: { id: categoryId } }
+    });
+  }
 
   //////filter////
   async findAllFiltered(filter: FilterEventsDto): Promise<{ data: Event[], total: number }> {
@@ -111,18 +142,18 @@ export class EventService {
     if (date) {
       query.andWhere('DATE(event.eventDate) = :date', { date });
     }
-    
+
     if (startDate && endDate) {
       query.andWhere('event.eventDate BETWEEN :startDate AND :endDate', {
         startDate,
         endDate,
       });
     }
-    
+
     if (upcoming === 'true') {
       query.andWhere('event.eventDate >= :today', { today: new Date() });
     }
-    
+
     if (hostId) {
       query.andWhere('host.id = :hostId', { hostId: parseInt(hostId) });
     }
@@ -138,6 +169,30 @@ export class EventService {
       .getManyAndCount();
 
     return { data, total };
+  }
+  async filterEvents(filter: EventFilterInput): Promise<Event[]> {
+    const events = await this.EventRepository.find({ relations: ['category', 'registrations'] });
+
+    const filteredEvents = await Promise.all(
+      events.map(async (event) => {
+        if (filter.id && event.id !== filter.id) return null;
+        if (filter.title && !event.title.toLowerCase().includes(filter.title.toLowerCase())) return null;
+        if (filter.categoryId && event.category?.id !== filter.categoryId) return null;
+        if (filter.startDate && new Date(event.eventDate) < new Date(filter.startDate)) return null;
+        if (filter.endDate && new Date(event.eventDate) > new Date(filter.endDate)) return null;
+
+        if (filter.isAvailable !== undefined) {
+          const registrations = event.registrations ?? [];
+          const maxCapacity = this.eventCapacities.get(event.id) ?? 50;
+          const isAvailable = registrations.length < maxCapacity;
+          if (isAvailable !== filter.isAvailable) return null;
+        }
+
+        return event;
+      }),
+    );
+
+    return filteredEvents.filter((e): e is Event => e !== null);
   }
 
   @Cron(CronExpression.EVERY_HOUR)

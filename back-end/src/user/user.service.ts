@@ -44,7 +44,6 @@ export class UserService {
     const user = this.UserRepository.create(userPartial);
     return await this.UserRepository.save(user);
   }
-
   findByfullName(fullName: string): Promise<User | null> {
     return this.UserRepository.findOne({ where: { fullName } });
   }
