@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useEventsWithFilter, useCategoriesGraphQL, type EventsFilter, type Event } from '@/hooks/useEventsGraphQL'
 import EventCard from '@/components/events/EventCard'
@@ -13,6 +13,7 @@ export const Route = createFileRoute('/event/events/page')({
 })
 
 function RouteComponent() {
+  const navigate = useNavigate()
   const [filter, setFilter] = useState<EventsFilter>({
     page: 1,
     limit: 12,
@@ -41,11 +42,10 @@ function RouteComponent() {
   const handlePageSizeChange = (limit: number) => {
     setFilter(prev => ({ ...prev, limit, page: 1 }))
   }
-
   // Handle event actions
   const handleViewEvent = (event: Event) => {
     console.log('View event:', event.id)
-    // Navigate to event details - implement based on your routing
+    navigate({ to: '/event/$eventId/page', params: { eventId: event.id } })
   }
 
   const handleRegisterForEvent = (event: Event) => {

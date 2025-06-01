@@ -20,9 +20,6 @@ export const createRouter = () => {
     }),
     TanstackQuery.getContext().queryClient,
   )
-  console.log('ROUTE TREE:', router.routesById)
-
-
   return router
 }
 

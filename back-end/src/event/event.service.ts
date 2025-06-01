@@ -311,7 +311,7 @@ export class EventService {
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations')
-      .leftJoinAndSelect('registrations.user', 'registrationUser');    // Apply filters
+      .leftJoinAndSelect('registrations.user', 'registrationUser');
     if (category) {
       query.andWhere('category.name LIKE :category', { category: `%${category}%` });
     }
