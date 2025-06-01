@@ -13,11 +13,6 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as OrganizerOrganizerIdEventsImport } from './routes/organizer/$organizerId/events'
-import { Route as DemoTanstackQueryImport } from './routes/demo.tanstack-query'
-import { Route as DemoStartServerFuncsImport } from './routes/demo.start.server-funcs'
-import { Route as DemoStartApiRequestImport } from './routes/demo.start.api-request'
-import { Route as DemoFormSimpleImport } from './routes/demo.form.simple'
-import { Route as DemoFormAddressImport } from './routes/demo.form.address'
 import { Route as AuthSignupPageImport } from './routes/auth/signup/page'
 import { Route as AuthLoginPageImport } from './routes/auth/login/page'
 
@@ -60,20 +55,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-<<<<<<< HEAD
-    '/organizer/$organizerId/events': {
-      id: '/organizer/$organizerId/events'
-      path: '/organizer/$organizerId/events'
-      fullPath: '/organizer/$organizerId/events'
-      preLoaderRoute: typeof OrganizerOrganizerIdEventsImport
-=======
-    '/demo/tanstack-query': {
-      id: '/demo/tanstack-query'
-      path: '/demo/tanstack-query'
-      fullPath: '/demo/tanstack-query'
-      preLoaderRoute: typeof DemoTanstackQueryImport
-      parentRoute: typeof rootRoute
-    }
     '/auth/login/page': {
       id: '/auth/login/page'
       path: '/auth/login/page'
@@ -88,33 +69,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupPageImport
       parentRoute: typeof rootRoute
     }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressImport
-      parentRoute: typeof rootRoute
-    }
-    '/demo/form/simple': {
-      id: '/demo/form/simple'
-      path: '/demo/form/simple'
-      fullPath: '/demo/form/simple'
-      preLoaderRoute: typeof DemoFormSimpleImport
-      parentRoute: typeof rootRoute
-    }
-    '/demo/start/api-request': {
-      id: '/demo/start/api-request'
-      path: '/demo/start/api-request'
-      fullPath: '/demo/start/api-request'
-      preLoaderRoute: typeof DemoStartApiRequestImport
-      parentRoute: typeof rootRoute
-    }
-    '/demo/start/server-funcs': {
-      id: '/demo/start/server-funcs'
-      path: '/demo/start/server-funcs'
-      fullPath: '/demo/start/server-funcs'
-      preLoaderRoute: typeof DemoStartServerFuncsImport
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+    '/organizer/$organizerId/events': {
+      id: '/organizer/$organizerId/events'
+      path: '/organizer/$organizerId/events'
+      fullPath: '/organizer/$organizerId/events'
+      preLoaderRoute: typeof OrganizerOrganizerIdEventsImport
       parentRoute: typeof rootRoute
     }
   }
@@ -124,119 +83,60 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-<<<<<<< HEAD
-  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
-=======
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-<<<<<<< HEAD
-  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
-=======
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-<<<<<<< HEAD
-  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
-=======
-  '/demo/tanstack-query': typeof DemoTanstackQueryRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
-  '/demo/form/simple': typeof DemoFormSimpleRoute
-  '/demo/start/api-request': typeof DemoStartApiRequestRoute
-  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-<<<<<<< HEAD
-  fullPaths: '/' | '/organizer/$organizerId/events'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/organizer/$organizerId/events'
-  id: '__root__' | '/' | '/organizer/$organizerId/events'
-=======
   fullPaths:
     | '/'
-    | '/demo/tanstack-query'
     | '/auth/login/page'
     | '/auth/signup/page'
-    | '/demo/form/address'
-    | '/demo/form/simple'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
+    | '/organizer/$organizerId/events'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/demo/tanstack-query'
     | '/auth/login/page'
     | '/auth/signup/page'
-    | '/demo/form/address'
-    | '/demo/form/simple'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
+    | '/organizer/$organizerId/events'
   id:
     | '__root__'
     | '/'
-    | '/demo/tanstack-query'
     | '/auth/login/page'
     | '/auth/signup/page'
-    | '/demo/form/address'
-    | '/demo/form/simple'
-    | '/demo/start/api-request'
-    | '/demo/start/server-funcs'
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+    | '/organizer/$organizerId/events'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-<<<<<<< HEAD
-  OrganizerOrganizerIdEventsRoute: typeof OrganizerOrganizerIdEventsRoute
-=======
-  DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
   AuthLoginPageRoute: typeof AuthLoginPageRoute
   AuthSignupPageRoute: typeof AuthSignupPageRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
-  DemoFormSimpleRoute: typeof DemoFormSimpleRoute
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+  OrganizerOrganizerIdEventsRoute: typeof OrganizerOrganizerIdEventsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-<<<<<<< HEAD
-  OrganizerOrganizerIdEventsRoute: OrganizerOrganizerIdEventsRoute,
-=======
-  DemoTanstackQueryRoute: DemoTanstackQueryRoute,
   AuthLoginPageRoute: AuthLoginPageRoute,
   AuthSignupPageRoute: AuthSignupPageRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
-  DemoFormSimpleRoute: DemoFormSimpleRoute,
-  DemoStartApiRequestRoute: DemoStartApiRequestRoute,
-  DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+  OrganizerOrganizerIdEventsRoute: OrganizerOrganizerIdEventsRoute,
 }
 
 export const routeTree = rootRoute
@@ -250,28 +150,13 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-<<<<<<< HEAD
-        "/organizer/$organizerId/events"
-=======
-        "/demo/tanstack-query",
         "/auth/login/page",
         "/auth/signup/page",
-        "/demo/form/address",
-        "/demo/form/simple",
-        "/demo/start/api-request",
-        "/demo/start/server-funcs"
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+        "/organizer/$organizerId/events"
       ]
     },
     "/": {
       "filePath": "index.tsx"
-    },
-<<<<<<< HEAD
-    "/organizer/$organizerId/events": {
-      "filePath": "organizer/$organizerId/events.tsx"
-=======
-    "/demo/tanstack-query": {
-      "filePath": "demo.tanstack-query.tsx"
     },
     "/auth/login/page": {
       "filePath": "auth/login/page.tsx"
@@ -279,18 +164,8 @@ export const routeTree = rootRoute
     "/auth/signup/page": {
       "filePath": "auth/signup/page.tsx"
     },
-    "/demo/form/address": {
-      "filePath": "demo.form.address.tsx"
-    },
-    "/demo/form/simple": {
-      "filePath": "demo.form.simple.tsx"
-    },
-    "/demo/start/api-request": {
-      "filePath": "demo.start.api-request.tsx"
-    },
-    "/demo/start/server-funcs": {
-      "filePath": "demo.start.server-funcs.tsx"
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
+    "/organizer/$organizerId/events": {
+      "filePath": "organizer/$organizerId/events.tsx"
     }
   }
 }

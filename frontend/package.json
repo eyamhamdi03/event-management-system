@@ -33,11 +33,7 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-<<<<<<< HEAD
-    "date-fns": "^4.1.0",
-=======
     "date-fns": "^3.6.0",
->>>>>>> 65db4b6ddae5485c96ae5fd0139cbdd1107538ef
     "lucide-react": "^0.476.0",
     "react": "^19.0.0",
     "react-day-picker": "^8.10.1",
