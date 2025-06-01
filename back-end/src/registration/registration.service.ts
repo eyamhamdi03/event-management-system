@@ -18,8 +18,7 @@ import {
   RegistrationResponseDto,
   UserDto,
 } from './dto/registration-response.dto';
-import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { Role } from 'src/auth/roles.enum';
+import { plainToInstance } from 'class-transformer';
 import { MailService } from '../mail/mail.service';
 import { QrCodeService } from '../qrcode/qrcode.service';
 import { log } from 'console';
@@ -43,7 +42,7 @@ export class RegistrationService {
   //get all registration
   async getRegistrations(): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
-      relations: ['user', 'event'], // Important: load the relations
+      relations: ['user', 'event'],
     });
 
     return registrations.map((registration) => {
@@ -125,7 +124,7 @@ export class RegistrationService {
   ): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
       where: { event: { id: eventId } },
-      relations: ['user', 'event'], // Make sure to include both relations
+      relations: ['user', 'event'],
     });
 
     // Transform each registration and its relations

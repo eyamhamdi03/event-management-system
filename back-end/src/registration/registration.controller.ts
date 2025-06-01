@@ -19,8 +19,6 @@ import { RegistrationResponseDto } from './dto/registration-response.dto';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { MailService } from 'src/mail/mail.service';
 import { Response } from 'express';
-import { Parser } from 'json2csv';
-import { RegistrationExportDto } from './dto/registration-export.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('registration')
@@ -55,7 +53,7 @@ export class RegistrationController {
   async registerToEvent(
     @Body() registrationData: CreateRegistrationDto,
   ): Promise<{ registration: Registration }> {
-    const { registration } = await this.registrationService.registerToEvent(
+    const registration = await this.registrationService.registerToEvent(
       registrationData.eventId,
       registrationData.userId,
     );

@@ -16,6 +16,7 @@ import { GraphQLModule } from './graphql/graphql.module';
 
 import { QrCodeModule } from './qrcode/qrcode.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ConfigModule } from '@nestjs/config';
 
 dotenv.config();
 
