@@ -1,17 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Query,
-  UnauthorizedException,
-  UseGuards,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express';
 
 import { Event } from './entities/event.entity';
 import { EventService } from './event.service';
@@ -30,6 +18,7 @@ import { RegistrationResponseDto } from '../registration/dto/registration-respon
 import { RegistrationExportDto } from '../registration/dto/registration-export.dto';
 import { Response } from 'express';
 import { Parser } from 'json2csv';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard)
@@ -89,16 +78,16 @@ export class EventController {
   async updateEvent(
     @Param('id') id: string,
     @Body() partialEvent: Partial<Event>,
-    @Req() req: Request,
+    @Req() req: Request, 
   ): Promise<Event> {
     const user = req.user as User;
     const userId = user?.id;
+
     if (!userId) {
-      throw new UnauthorizedException(
-        'User information is missing from request.',
-      );
+      throw new UnauthorizedException('User information is missing from request.');
     }
-    return this.eventService.updateEvent(id, partialEvent, userId);
+    return await this.eventService.updateEvent(id, partialEvent, userId);
+
   }
 
   @Delete('soft/:id')

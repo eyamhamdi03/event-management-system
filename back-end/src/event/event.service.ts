@@ -1,20 +1,14 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Event } from './entities/event.entity';
-
 import { Repository, Between, MoreThanOrEqual } from 'typeorm';
+import { Event } from './entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
-import { User } from '../user/entities/user.entity';
-import { Category } from '../category/entities/category.entity';
 import { EventFilterInput } from './dto/filter-event.input';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MailService } from '../mail/mail.service';
 import { Registration } from 'src/registration/entities/registration.entity';
-
+import { User } from '../user/entities/user.entity';
+import { Category } from '../category/entities/category.entity';
 import { FilterEventsDto } from './dto/filter-events.dto';
 
 @Injectable()
@@ -22,20 +16,18 @@ export class EventService {
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
+    private readonly mailService: MailService,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-    @InjectRepository(Registration)
-    private registrationRepository: Repository<Registration>,
-    private readonly mailService: MailService,
   ) { }
   private eventCapacities: Map<string, number> = new Map();
   async getEvents(): Promise<any[]> {
-    const events = await this.eventRepository.find({
-      relations: ['registrations'],
-    });
-    return events.map((event) => {
+    const events = await this.eventRepository.find({ relations: ['registrations'] });
+    return events.map(event => {
       const currentParticipants = event.registrations.length;
       const isFull = currentParticipants >= event.participantLimit;
       return {
@@ -52,9 +44,8 @@ export class EventService {
     const host = await this.userRepository.findOne({ where: { id: hostId } });
     if (!host) throw new NotFoundException('Host not found');
 
-    const category = await this.categoryRepository.findOne({
-      where: { id: categoryId },
-    });
+    const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+
     if (!category) throw new NotFoundException('Category not found');
 
     // Create and save event
@@ -63,9 +54,9 @@ export class EventService {
       host,
       category,
     });
-    const savedEvent = await this.eventRepository.save(event);
 
-    return savedEvent;
+    return await this.eventRepository.save(event);
+
   }
   async getEventById(id: string): Promise<any> {
     const event = await this.eventRepository.findOne({
@@ -90,16 +81,16 @@ export class EventService {
     const updated = { ...existing, ...newEvent, id: existing.id };
     return await this.eventRepository.save(updated);
   }
-  async updateEvent(
-    id: string,
-    partialEvent: Partial<Event>,
-    userId: string,
-  ): Promise<Event> {
+
+  async updateEvent(id: string, partialEvent: Partial<Event>, userId: string): Promise<Event> {
+
     const event = await this.eventRepository.findOne({
       where: { id },
       relations: ['host'],
     });
     if (!event) throw new NotFoundException(`Event with ID ${id} not found`);
+
+    // Only the host can update
 
     if (event.host.id !== userId) {
       throw new ForbiddenException('You are not allowed to update this event');
@@ -172,8 +163,8 @@ export class EventService {
       limit = '10',
     } = filter;
 
-    const query = this.eventRepository
-      .createQueryBuilder('event')
+    const query = this.eventRepository.createQueryBuilder('event')
+
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations');
