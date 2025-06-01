@@ -6,25 +6,27 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../auth/roles.enum'; 
+import { Role } from '../auth/roles.enum';
 import { Public } from '../auth/decorators/public.decorator';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { MailService } from '../mail/mail.service';
 
 @Controller('auth')
 @SkipThrottle() // Skip rate limiting by default for all endpoints
 export class AuthController {
-  constructor(
-    private authService: AuthService,    
-    private configService: ConfigService 
-  ) {}
+    constructor(
+      private authService: AuthService,
+      private configService: ConfigService,
+      private mailService: MailService
+    ) { }
 
   @Throttle({ default: { limit: 3, ttl: 60 } }) // 3 requests per minute
   @Post('register')
-  @Public() 
+  @Public()
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
@@ -59,7 +61,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Req() req: Request) {
-    const user = req.user as { sub: string }; 
+    const user = req.user as { sub: string };
     return this.authService.logout(user.sub);
   }
 
@@ -109,7 +111,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ) {
     const tokens = await this.authService.refreshTokens(body.refreshToken);
-    
+
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
@@ -119,7 +121,6 @@ export class AuthController {
 
     return { access_token: tokens.access_token };
   }
- 
   @Get('admin')
   @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
@@ -127,8 +128,17 @@ export class AuthController {
     return "access is granted: admin";
   }
 
-  @Get('auth')
+  @Get('email-status')
+  @Roles(Role.Admin)
   @UseGuards(JwtAuthGuard)
+  getEmailStatus() {
+    return {
+      configured: this.mailService.isEmailConfigured(),
+      status: this.mailService.getEmailStatus()
+    };
+  }
+
+  @Get('auth') @UseGuards(JwtAuthGuard)
   test() {
     return "access is granted";
   }
