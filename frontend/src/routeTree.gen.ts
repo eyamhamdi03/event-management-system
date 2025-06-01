@@ -18,6 +18,7 @@ import { Route as EventAddPageImport } from './routes/event/add/page'
 import { Route as CategoryAddPageImport } from './routes/category/add/page'
 import { Route as AuthSignupPageImport } from './routes/auth/signup/page'
 import { Route as AuthLoginPageImport } from './routes/auth/login/page'
+import { Route as AuthCallbackPageImport } from './routes/auth/callback/page'
 
 // Create/Update Routes
 
@@ -65,6 +66,12 @@ const AuthLoginPageRoute = AuthLoginPageImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthCallbackPageRoute = AuthCallbackPageImport.update({
+  id: '/auth/callback/page',
+  path: '/auth/callback/page',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/callback/page': {
+      id: '/auth/callback/page'
+      path: '/auth/callback/page'
+      fullPath: '/auth/callback/page'
+      preLoaderRoute: typeof AuthCallbackPageImport
       parentRoute: typeof rootRoute
     }
     '/auth/login/page': {
@@ -125,6 +139,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
   '/category/add/page': typeof CategoryAddPageRoute
@@ -135,6 +150,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
   '/category/add/page': typeof CategoryAddPageRoute
@@ -146,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
   '/category/add/page': typeof CategoryAddPageRoute
@@ -158,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
     | '/category/add/page'
@@ -167,6 +185,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
     | '/category/add/page'
@@ -176,6 +195,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
     | '/category/add/page'
@@ -187,6 +207,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthCallbackPageRoute: typeof AuthCallbackPageRoute
   AuthLoginPageRoute: typeof AuthLoginPageRoute
   AuthSignupPageRoute: typeof AuthSignupPageRoute
   CategoryAddPageRoute: typeof CategoryAddPageRoute
@@ -197,6 +218,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthCallbackPageRoute: AuthCallbackPageRoute,
   AuthLoginPageRoute: AuthLoginPageRoute,
   AuthSignupPageRoute: AuthSignupPageRoute,
   CategoryAddPageRoute: CategoryAddPageRoute,
@@ -216,6 +238,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/auth/callback/page",
         "/auth/login/page",
         "/auth/signup/page",
         "/category/add/page",
@@ -226,6 +249,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/auth/callback/page": {
+      "filePath": "auth/callback/page.tsx"
     },
     "/auth/login/page": {
       "filePath": "auth/login/page.tsx"

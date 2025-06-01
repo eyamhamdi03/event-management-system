@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
-
 import { SignupForm } from '@/components/register-form'
+import { api } from '@/lib/api'
 
 export const Route = createFileRoute('/auth/signup/page')({
   component: SignupPage,
@@ -9,7 +9,6 @@ export const Route = createFileRoute('/auth/signup/page')({
 
 function SignupPage() {
   const navigate = useNavigate()
-  const API_BASE_URL = `${import.meta.env.VITE_API_HOST}:${import.meta.env.VITE_API_PORT}`
 
   const signupMutation = useMutation({
     mutationFn: async (payload: {
@@ -20,15 +19,18 @@ function SignupPage() {
       birthDate: string
       role: 'organizer' | 'participant'
     }) => {
-      const res = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error('Signup failed')
-      return res.json()
+      return api('/auth/register', 'POST', payload)
     },
-    onSuccess: () => navigate({ to: '/auth/login/page' }),
+    onSuccess: (data: any) => {
+      console.log('Registration successful:', data)
+      // Navigate to login page regardless of email send status
+      navigate({
+        to: '/auth/login/page'
+      })
+    },
+    onError: (error) => {
+      console.error('Registration failed:', error)
+    }
   })
 
   return (

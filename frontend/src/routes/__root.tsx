@@ -6,8 +6,11 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 
-
 import TanStackQueryLayout from '../integrations/tanstack-query/layout'
+import { AuthProvider, useAuth } from '../context/auth-context'
+import Header from '../components/Header'
+import NotFoundComponent from '../components/notfound'
+import { AuthLoadingSpinner } from '../components/AuthLoadingSpinner'
 
 import appCss from '../styles.css?url'
 
@@ -15,6 +18,22 @@ import type { QueryClient } from '@tanstack/react-query'
 
 interface MyRouterContext {
   queryClient: QueryClient
+}
+
+function AppContent() {
+  const { isLoading } = useAuth()
+
+  if (isLoading) {
+    return <AuthLoadingSpinner />
+  }
+
+  return (
+    <>
+      <Header />
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  )
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
@@ -28,7 +47,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'EventHub - Event Management System',
       },
     ],
     links: [
@@ -39,12 +58,16 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
 
+  notFoundComponent: () => <NotFoundComponent />,
+
+
   component: () => (
     <RootDocument>
-      <TanStackQueryLayout>
-        <Outlet />
-        <TanStackRouterDevtools />
-      </TanStackQueryLayout>
+      <AuthProvider>
+        <TanStackQueryLayout>
+          <AppContent />
+        </TanStackQueryLayout>
+      </AuthProvider>
     </RootDocument>
   ),
 })
