@@ -79,12 +79,6 @@ export class RegistrationController {
     return { message: 'Registration cancelled successfully' };
   }
 
-  @Patch('confirm/:id')
-  async confirmRegistration(
-    @Param('id') id: string,
-  ): Promise<Registration> {
-    return await this.registrationService.confirmRegistration(id);
-  }
 
   @Patch(':id/check-in')
   @Roles(Role.Admin, Role.Organizer)
