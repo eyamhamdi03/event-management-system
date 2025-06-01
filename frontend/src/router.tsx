@@ -20,11 +20,12 @@ export const createRouter = () => {
     }),
     TanstackQuery.getContext().queryClient,
   )
+  console.log('ROUTE TREE:', router.routesById)
+
 
   return router
 }
 
-// Register the router instance for type safety
 declare module '@tanstack/react-router' {
   interface Register {
     router: ReturnType<typeof createRouter>
