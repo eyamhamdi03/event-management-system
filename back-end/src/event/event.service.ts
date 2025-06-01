@@ -1,18 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Event } from './entities/event.entity';
 import { Repository } from 'typeorm';
-import { FilterEventsDto } from './dto/filter-events.dto';
+import { Event } from './entities/event.entity';
 import { CreateEventDto } from './dto/create-event.dto';
+import { User } from '../user/entities/user.entity';
+import { Category } from '../category/entities/category.entity';
+import { FilterEventsDto } from './dto/filter-events.dto';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
-    private EventRepository: Repository<Event>,
+    private eventRepository: Repository<Event>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
   ) {}
+
   async getEvents(): Promise<any[]> {
-    const events = await this.EventRepository.find({
+    const events = await this.eventRepository.find({
       relations: ['registrations'],
     });
     return events.map((event) => {
@@ -26,11 +33,28 @@ export class EventService {
     });
   }
   async createEvent(eventDto: CreateEventDto): Promise<Event> {
-    const event = this.EventRepository.create(eventDto);
-    return this.EventRepository.save(event);
+    const { hostId, categoryId, ...eventData } = eventDto;
+
+    // Fetch related entities
+    const host = await this.userRepository.findOne({ where: { id: hostId } });
+    if (!host) throw new NotFoundException('Host not found');
+
+    const category = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+    });
+    if (!category) throw new NotFoundException('Category not found');
+
+    // Create and save event
+    const event = this.eventRepository.create({
+      ...eventData,
+      host,
+      category,
+    });
+
+    return await this.eventRepository.save(event);
   }
   async getEventById(id: string): Promise<any> {
-    const event = await this.EventRepository.findOne({
+    const event = await this.eventRepository.findOne({
       where: { id },
       relations: ['registrations'],
     });
@@ -50,10 +74,10 @@ export class EventService {
   async replaceEvent(id: string, newEvent: Event): Promise<Event> {
     const existing = await this.getEventById(id);
     const updated = { ...existing, ...newEvent, id: existing.id };
-    return await this.EventRepository.save(updated);
+    return await this.eventRepository.save(updated);
   }
   async updateEvent(id: string, partialEvent: Partial<Event>): Promise<Event> {
-    await this.EventRepository.update(id, partialEvent);
+    await this.eventRepository.update(id, partialEvent);
     return this.getEventById(id);
   }
   async findByHostId(userId: string): Promise<Event[]> {
@@ -64,17 +88,17 @@ export class EventService {
   }
 
   async deleteEvent(id: string): Promise<void> {
-    const result = await this.EventRepository.delete(id);
+    const result = await this.eventRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
   }
   async softRemoveEvent(id: string): Promise<void> {
     const event = await this.getEventById(id);
-    await this.EventRepository.softRemove(event);
+    await this.eventRepository.softRemove(event);
   }
   async restoreEvent(id: string): Promise<void> {
-    const result = await this.EventRepository.restore(id);
+    const result = await this.eventRepository.restore(id);
     if (result.affected === 0) {
       throw new NotFoundException(
         `Event with ID ${id} not found or not soft deleted`,
@@ -98,7 +122,8 @@ export class EventService {
       limit = '10',
     } = filter;
 
-    const query = this.EventRepository.createQueryBuilder('event')
+    const query = this.eventRepository
+      .createQueryBuilder('event')
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations');
