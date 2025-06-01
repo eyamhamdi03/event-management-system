@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import logo from '../logo.svg'
+import { Provider } from '../integrations/tanstack-query/root-provider'
+import { createRouter } from '../router'
 
 export const Route = createFileRoute('/')({
   component: App,

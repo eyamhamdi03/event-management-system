@@ -17,6 +17,8 @@ import { Route as DemoStartServerFuncsImport } from './routes/demo.start.server-
 import { Route as DemoStartApiRequestImport } from './routes/demo.start.api-request'
 import { Route as DemoFormSimpleImport } from './routes/demo.form.simple'
 import { Route as DemoFormAddressImport } from './routes/demo.form.address'
+import { Route as AuthSignupPageImport } from './routes/auth/signup/page'
+import { Route as AuthLoginPageImport } from './routes/auth/login/page'
 
 // Create/Update Routes
 
@@ -56,6 +58,18 @@ const DemoFormAddressRoute = DemoFormAddressImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthSignupPageRoute = AuthSignupPageImport.update({
+  id: '/auth/signup/page',
+  path: '/auth/signup/page',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthLoginPageRoute = AuthLoginPageImport.update({
+  id: '/auth/login/page',
+  path: '/auth/login/page',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -72,6 +86,20 @@ declare module '@tanstack/react-router' {
       path: '/demo/tanstack-query'
       fullPath: '/demo/tanstack-query'
       preLoaderRoute: typeof DemoTanstackQueryImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/login/page': {
+      id: '/auth/login/page'
+      path: '/auth/login/page'
+      fullPath: '/auth/login/page'
+      preLoaderRoute: typeof AuthLoginPageImport
+      parentRoute: typeof rootRoute
+    }
+    '/auth/signup/page': {
+      id: '/auth/signup/page'
+      path: '/auth/signup/page'
+      fullPath: '/auth/signup/page'
+      preLoaderRoute: typeof AuthSignupPageImport
       parentRoute: typeof rootRoute
     }
     '/demo/form/address': {
@@ -110,6 +138,8 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/auth/login/page': typeof AuthLoginPageRoute
+  '/auth/signup/page': typeof AuthSignupPageRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -119,6 +149,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/auth/login/page': typeof AuthLoginPageRoute
+  '/auth/signup/page': typeof AuthSignupPageRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -129,6 +161,8 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/auth/login/page': typeof AuthLoginPageRoute
+  '/auth/signup/page': typeof AuthSignupPageRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -140,6 +174,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/demo/tanstack-query'
+    | '/auth/login/page'
+    | '/auth/signup/page'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -148,6 +184,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/demo/tanstack-query'
+    | '/auth/login/page'
+    | '/auth/signup/page'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -156,6 +194,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/demo/tanstack-query'
+    | '/auth/login/page'
+    | '/auth/signup/page'
     | '/demo/form/address'
     | '/demo/form/simple'
     | '/demo/start/api-request'
@@ -166,6 +206,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  AuthLoginPageRoute: typeof AuthLoginPageRoute
+  AuthSignupPageRoute: typeof AuthSignupPageRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
@@ -175,6 +217,8 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  AuthLoginPageRoute: AuthLoginPageRoute,
+  AuthSignupPageRoute: AuthSignupPageRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
@@ -193,6 +237,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/demo/tanstack-query",
+        "/auth/login/page",
+        "/auth/signup/page",
         "/demo/form/address",
         "/demo/form/simple",
         "/demo/start/api-request",
@@ -204,6 +250,12 @@ export const routeTree = rootRoute
     },
     "/demo/tanstack-query": {
       "filePath": "demo.tanstack-query.tsx"
+    },
+    "/auth/login/page": {
+      "filePath": "auth/login/page.tsx"
+    },
+    "/auth/signup/page": {
+      "filePath": "auth/signup/page.tsx"
     },
     "/demo/form/address": {
       "filePath": "demo.form.address.tsx"
