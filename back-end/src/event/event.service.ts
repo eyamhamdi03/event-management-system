@@ -13,6 +13,8 @@ import { FilterEventsDto } from './dto/filter-events.dto';
 
 @Injectable()
 export class EventService {
+ 
+
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
@@ -99,12 +101,21 @@ export class EventService {
     await this.eventRepository.update(id, partialEvent);
     return this.getEventById(id);
   }
-  async findByHostId(userId: string): Promise<Event[]> {
-    return this.eventRepository.find({
-      where: { host: { id: userId } },
-      order: { eventDate: 'ASC' },
-    });
-  }
+async findByHostId(userId: string): Promise<Event[]> {
+  
+  return this.eventRepository.find({
+    where: {
+      host: {
+        id: userId,
+      },
+    },
+    relations: ['host', 'category'],
+    order: {
+      eventDate: 'ASC',
+    },
+  });
+}
+
 
   async deleteEvent(id: string): Promise<void> {
     const result = await this.eventRepository.delete(id);
@@ -407,4 +418,12 @@ export class EventService {
 
     return sortFieldMap[sortBy] || 'event.eventDate';
   }
+  async findEventsByParticipantId(userId: string): Promise<Event[]> {
+ 
+
+  return this.eventRepository
+    .createQueryBuilder('event')
+    .innerJoin('event.registrations', 'registration', 'registration.userId = :userId', { userId })
+    .getMany()
+}
 }

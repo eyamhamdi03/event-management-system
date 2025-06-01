@@ -36,11 +36,20 @@ export interface Event {
 }
 
 export const useEvents = () => {
-  const { token } = useAuth()
+  const { token, user } = useAuth() 
+console.log("USER DEBUG", user);
+
+  const apiPath =
+    user?.role === 'organizer'
+      ? '/event/mine'
+      : user?.role === 'user'
+      ? '/event/registered'
+      : '/event'
+
   return useQuery<Event[]>({
-    queryKey: ['events', 'mine'],
-    queryFn: () => api<Event[]>('/event/mine', 'GET', undefined, token),
-    enabled: !!token,
-    staleTime: 5 * 60 * 1_000,
+    queryKey: ['events', apiPath],
+    queryFn: () => api<Event[]>(apiPath, 'GET', undefined, token),
+    enabled: !!token && !!user?.role,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }

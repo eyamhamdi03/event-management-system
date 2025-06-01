@@ -29,6 +29,7 @@ function SignupPage() {
       birthDate: string
       role: 'organizer' | 'participant'
     }) => {
+      console.log(payload)
       return api('/auth/register', 'POST', payload)
     },
     onSuccess: (data: any) => {

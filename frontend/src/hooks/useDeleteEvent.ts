@@ -7,8 +7,11 @@ export const useDeleteEvent = () => {
   const { token } = useAuth()
 
   return useMutation({
-    mutationFn: (id: string) =>
-      api(`/event/soft/${id}`, 'DELETE', undefined, token),
+   mutationFn: (id: string) => {
+  console.log("TOKEN USED FOR DELETE:", token) // 👈 debug ici
+  return api(`/event/soft/${id}`, 'DELETE', undefined, token)
+},
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['event'] })
     },
