@@ -5,6 +5,7 @@ export function LayoutAddition() {
 }
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { AuthProvider } from '@/context/auth-context'
 
 const queryClient = new QueryClient()
 
@@ -12,10 +13,12 @@ interface TanStackQueryLayoutProps {
   children: ReactNode
 }
 
-export default function TanStackQueryLayout({ children }: TanStackQueryLayoutProps) {
+export default function TanStackQueryLayout({
+  children,
+}: TanStackQueryLayoutProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <AuthProvider>{children}</AuthProvider>
     </QueryClientProvider>
   )
 }
