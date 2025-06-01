@@ -22,6 +22,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { CreateEventDto } from './dto/create-event.dto';
+import { User } from '../user/entities/user.entity';
 import { Req } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -38,7 +39,13 @@ export class EventController {
     const user = req.user as { id: string };
     return this.eventService.findByHostId(user.id);
   }
-
+  @Get('mine')
+  @Roles(Role.Organizer)
+  @Throttle({ default: { limit: 30, ttl: 60 } }) // 30 requests/min
+  async getMyEvents(@Req() req: Request): Promise<Event[]> {
+    const user = req.user as { id: string };
+    return this.eventService.findByHostId(user.id);
+  }
   //Get Filter//
 
   @Get('/withFilter')
@@ -82,15 +89,35 @@ export class EventController {
   async updateEvent(
     @Param('id') id: string,
     @Body() partialEvent: Partial<Event>,
+    @Req() req: Request,
   ): Promise<Event> {
-    return await this.eventService.updateEvent(id, partialEvent);
+    const user = req.user as User;
+    const userId = user?.id;
+    if (!userId) {
+      throw new UnauthorizedException(
+        'User information is missing from request.',
+      );
+    }
+    return this.eventService.updateEvent(id, partialEvent, userId);
   }
 
   @Delete('soft/:id')
   @Roles(Role.Admin, Role.Organizer)
   @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests/min
-  async softDelete(@Param('id') id: string): Promise<void> {
-    return await this.eventService.softRemoveEvent(id);
+  async softDeleteEvent(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req.user as User;
+    const userId = user?.id;
+    const userRole = user?.role;
+
+    if (!userId || !userRole) {
+      throw new UnauthorizedException(
+        'User information is missing from request.',
+      );
+    }
+    await this.eventService.softDeleteEvent(id, userId, userRole);
   }
 
   @Post('restore/:id')

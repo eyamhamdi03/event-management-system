@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
@@ -6,6 +10,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { User } from '../user/entities/user.entity';
 import { Category } from '../category/entities/category.entity';
 import { FilterEventsDto } from './dto/filter-events.dto';
+import { Role } from 'src/auth/roles.enum';
 
 @Injectable()
 export class EventService {
@@ -76,7 +81,21 @@ export class EventService {
     const updated = { ...existing, ...newEvent, id: existing.id };
     return await this.eventRepository.save(updated);
   }
-  async updateEvent(id: string, partialEvent: Partial<Event>): Promise<Event> {
+  async updateEvent(
+    id: string,
+    partialEvent: Partial<Event>,
+    userId: string,
+  ): Promise<Event> {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: ['host'],
+    });
+    if (!event) throw new NotFoundException(`Event with ID ${id} not found`);
+
+    if (event.host.id !== userId) {
+      throw new ForbiddenException('You are not allowed to update this event');
+    }
+
     await this.eventRepository.update(id, partialEvent);
     return this.getEventById(id);
   }
