@@ -5,12 +5,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from '@tanstack/react-router'
 import { useDeleteEvent } from '@/hooks/useDeleteEvent'
+import { useEffect } from 'react'
 
 export default function MyEventsList() {
   const navigate = useNavigate()
 
   const { data: events = [], isLoading, refetch } = useEvents()
   const deleteEvent = useDeleteEvent()
+useEffect(() => {
+  if (events) {
+    console.log('Frontend received events:', events)
+  }
+}, [events])
 
   const handleDelete = async (id: string) => {
     try {
