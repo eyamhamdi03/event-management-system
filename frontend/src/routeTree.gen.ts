@@ -12,7 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as OrganizerOrganizerIdEventsImport } from './routes/organizer/$organizerId/events'
+import { Route as EventEventsPageImport } from './routes/event/events/page'
 import { Route as EventDetailsPageImport } from './routes/event/details/page'
 import { Route as EventAddPageImport } from './routes/event/add/page'
 import { Route as CategoryAddPageImport } from './routes/category/add/page'
@@ -27,13 +27,11 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const OrganizerOrganizerIdEventsRoute = OrganizerOrganizerIdEventsImport.update(
-  {
-    id: '/organizer/$organizerId/events',
-    path: '/organizer/$organizerId/events',
-    getParentRoute: () => rootRoute,
-  } as any,
-)
+const EventEventsPageRoute = EventEventsPageImport.update({
+  id: '/event/events/page',
+  path: '/event/events/page',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const EventDetailsPageRoute = EventDetailsPageImport.update({
   id: '/event/details/page',
@@ -111,11 +109,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventDetailsPageImport
       parentRoute: typeof rootRoute
     }
-    '/organizer/$organizerId/events': {
-      id: '/organizer/$organizerId/events'
-      path: '/organizer/$organizerId/events'
-      fullPath: '/organizer/$organizerId/events'
-      preLoaderRoute: typeof OrganizerOrganizerIdEventsImport
+    '/event/events/page': {
+      id: '/event/events/page'
+      path: '/event/events/page'
+      fullPath: '/event/events/page'
+      preLoaderRoute: typeof EventEventsPageImport
       parentRoute: typeof rootRoute
     }
   }
@@ -130,7 +128,7 @@ export interface FileRoutesByFullPath {
   '/category/add/page': typeof CategoryAddPageRoute
   '/event/add/page': typeof EventAddPageRoute
   '/event/details/page': typeof EventDetailsPageRoute
-  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
+  '/event/events/page': typeof EventEventsPageRoute
 }
 
 export interface FileRoutesByTo {
@@ -140,7 +138,7 @@ export interface FileRoutesByTo {
   '/category/add/page': typeof CategoryAddPageRoute
   '/event/add/page': typeof EventAddPageRoute
   '/event/details/page': typeof EventDetailsPageRoute
-  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
+  '/event/events/page': typeof EventEventsPageRoute
 }
 
 export interface FileRoutesById {
@@ -151,7 +149,7 @@ export interface FileRoutesById {
   '/category/add/page': typeof CategoryAddPageRoute
   '/event/add/page': typeof EventAddPageRoute
   '/event/details/page': typeof EventDetailsPageRoute
-  '/organizer/$organizerId/events': typeof OrganizerOrganizerIdEventsRoute
+  '/event/events/page': typeof EventEventsPageRoute
 }
 
 export interface FileRouteTypes {
@@ -163,7 +161,7 @@ export interface FileRouteTypes {
     | '/category/add/page'
     | '/event/add/page'
     | '/event/details/page'
-    | '/organizer/$organizerId/events'
+    | '/event/events/page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -172,7 +170,7 @@ export interface FileRouteTypes {
     | '/category/add/page'
     | '/event/add/page'
     | '/event/details/page'
-    | '/organizer/$organizerId/events'
+    | '/event/events/page'
   id:
     | '__root__'
     | '/'
@@ -181,7 +179,7 @@ export interface FileRouteTypes {
     | '/category/add/page'
     | '/event/add/page'
     | '/event/details/page'
-    | '/organizer/$organizerId/events'
+    | '/event/events/page'
   fileRoutesById: FileRoutesById
 }
 
@@ -192,7 +190,7 @@ export interface RootRouteChildren {
   CategoryAddPageRoute: typeof CategoryAddPageRoute
   EventAddPageRoute: typeof EventAddPageRoute
   EventDetailsPageRoute: typeof EventDetailsPageRoute
-  OrganizerOrganizerIdEventsRoute: typeof OrganizerOrganizerIdEventsRoute
+  EventEventsPageRoute: typeof EventEventsPageRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -202,7 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoryAddPageRoute: CategoryAddPageRoute,
   EventAddPageRoute: EventAddPageRoute,
   EventDetailsPageRoute: EventDetailsPageRoute,
-  OrganizerOrganizerIdEventsRoute: OrganizerOrganizerIdEventsRoute,
+  EventEventsPageRoute: EventEventsPageRoute,
 }
 
 export const routeTree = rootRoute
@@ -221,7 +219,7 @@ export const routeTree = rootRoute
         "/category/add/page",
         "/event/add/page",
         "/event/details/page",
-        "/organizer/$organizerId/events"
+        "/event/events/page"
       ]
     },
     "/": {
@@ -242,8 +240,8 @@ export const routeTree = rootRoute
     "/event/details/page": {
       "filePath": "event/details/page.tsx"
     },
-    "/organizer/$organizerId/events": {
-      "filePath": "organizer/$organizerId/events.tsx"
+    "/event/events/page": {
+      "filePath": "event/events/page.tsx"
     }
   }
 }

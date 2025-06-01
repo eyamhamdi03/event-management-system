@@ -12,8 +12,10 @@ export class EventService {
     private EventRepository: Repository<Event>,
   ) {}
   async getEvents(): Promise<any[]> {
-    const events = await this.EventRepository.find({ relations: ['registrations'] });
-    return events.map(event => {
+    const events = await this.EventRepository.find({
+      relations: ['registrations'],
+    });
+    return events.map((event) => {
       const currentParticipants = event.registrations.length;
       const isFull = currentParticipants >= event.participantLimit;
       return {
@@ -32,7 +34,8 @@ export class EventService {
       where: { id },
       relations: ['registrations'],
     });
-    if (!event) throw new NotFoundException('Event with this id ${id} not found');
+    if (!event)
+      throw new NotFoundException('Event with this id ${id} not found');
 
     const currentParticipants = event.registrations.length;
     const isFull = currentParticipants >= event.participantLimit;
@@ -52,6 +55,12 @@ export class EventService {
   async updateEvent(id: string, partialEvent: Partial<Event>): Promise<Event> {
     await this.EventRepository.update(id, partialEvent);
     return this.getEventById(id);
+  }
+  async findByHostId(userId: string): Promise<Event[]> {
+    return this.EventRepository.find({
+      where: { host: { id: userId } },
+      order: { eventDate: 'ASC' },
+    });
   }
 
   async deleteEvent(id: string): Promise<void> {
@@ -74,7 +83,9 @@ export class EventService {
   }
 
   //////filter////
-  async findAllFiltered(filter: FilterEventsDto): Promise<{ data: Event[], total: number }> {
+  async findAllFiltered(
+    filter: FilterEventsDto,
+  ): Promise<{ data: Event[]; total: number }> {
     const {
       category,
       search,
@@ -97,28 +108,28 @@ export class EventService {
     }
 
     if (search) {
-      query.andWhere('(event.title ILIKE :search OR event.description ILIKE :search)', {
-        search: `%${search}%`,
-      });
+      query.andWhere(
+        '(event.title ILIKE :search OR event.description ILIKE :search)',
+        {
+          search: `%${search}%`,
+        },
+      );
     }
 
     if (date) {
       query.andWhere('DATE(event.eventDate) = :date', { date });
     }
-    
+
     if (startDate && endDate) {
       query.andWhere('event.eventDate BETWEEN :startDate AND :endDate', {
         startDate,
         endDate,
       });
     }
-    
+
     if (upcoming === 'true') {
       query.andWhere('event.eventDate >= :today', { today: new Date() });
     }
-    
-   
-    
 
     if (hostId) {
       query.andWhere('host.id = :hostId', { hostId: parseInt(hostId) });
@@ -137,5 +148,3 @@ export class EventService {
     return { data, total };
   }
 }
-
-
