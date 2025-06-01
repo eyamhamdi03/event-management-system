@@ -171,7 +171,7 @@ export class EventService {
 
     if (category) {
       query.andWhere('category.name = :category', { category });
-    }    if (search) {
+    } if (search) {
       query.andWhere(
         '(event.title LIKE :search OR event.description LIKE :search)',
         {

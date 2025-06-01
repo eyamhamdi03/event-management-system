@@ -53,7 +53,8 @@ export default function EventFilters({
             page: 1,
             limit: filter.limit || 12,
             sortBy: 'EVENT_DATE',
-            sortOrder: 'ASC'        })
+            sortOrder: 'ASC'
+        })
     }
 
     const hasActiveFilters = Boolean(
