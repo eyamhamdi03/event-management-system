@@ -79,7 +79,6 @@ export class RegistrationController {
     return { message: 'Registration cancelled successfully' };
   }
 
-
   @Patch(':id/check-in')
   @Roles(Role.Admin, Role.Organizer)
   async checkIn(@Param('id') id: string): Promise<{ message: string }> {
@@ -87,6 +86,11 @@ export class RegistrationController {
     return { message: 'Participant checked in.' };
   }
 
- 
+  @Get('user/me')
+  @Roles(Role.User, Role.Organizer, Role.Admin)
+  async getUserRegistrations(@Req() req: any): Promise<RegistrationResponseDto[]> {
+    const userId = req.user.id;
+    return await this.registrationService.getUserRegistrations(userId);
+  }
 
 }

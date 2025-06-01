@@ -273,7 +273,6 @@ export class RegistrationService {
       },
     }));
   }
-
   async getExportData(eventId: string, type: 'participants' | 'attendants'): Promise<RegistrationExportDto[]> {
     const data =
       type === 'attendants'
@@ -286,5 +285,49 @@ export class RegistrationService {
       confirmed: r.confirmed,
       ...(type === 'attendants' ? { checkedIn: true } : {}),
     }));
+  }
+
+  async getUserRegistrations(userId: string): Promise<RegistrationResponseDto[]> {
+    const registrations = await this.registrationRepo.find({
+      where: { user: { id: userId }, confirmed: true },
+      relations: ['user', 'event', 'event.category', 'event.host'],
+      order: { createdAt: 'DESC' }
+    });
+
+    return registrations.map((registration) => {
+      const dto = new RegistrationResponseDto();
+      dto.id = registration.id;
+      dto.confirmed = registration.confirmed;
+      dto.createdAt = registration.createdAt;
+      dto.eventId = registration.event.id;
+
+      // Map user relation
+      if (registration.user) {
+        const userDto = new UserDto();
+        userDto.id = registration.user.id;
+        userDto.fullName = registration.user.fullName;
+        userDto.email = registration.user.email;
+        dto.user = userDto;
+      }
+
+      // Map event relation with full details
+      if (registration.event) {
+        const eventDto = new EventDto();
+        eventDto.id = registration.event.id;
+        eventDto.title = registration.event.title;
+        // Add additional event properties for tickets
+        (eventDto as any).description = registration.event.description;
+        (eventDto as any).eventDate = registration.event.eventDate;
+        (eventDto as any).location = registration.event.location;
+        (eventDto as any).category = registration.event.category;
+        (eventDto as any).host = registration.event.host;
+        dto.event = eventDto;
+      }
+
+      // Add check-in status
+      (dto as any).checkedIn = registration.checkedIn;
+
+      return dto;
+    });
   }
 }

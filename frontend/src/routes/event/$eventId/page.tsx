@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { ChatRoom } from '@/components/ChatRoom'
 import { useAuth } from '@/context/auth-context'
+import { useRegisterForEvent, useCancelRegistration, useUserEventRegistration } from '@/hooks/useRegistration'
 
 import { useEventById } from '@/hooks/useEventsGraphQL'
 
@@ -30,12 +31,14 @@ export const Route = createFileRoute('/event/$eventId/page')({
 function EventDetailsPage() {
     const { eventId } = Route.useParams()
     const navigate = useNavigate()
-    const { user, token, isAuthenticated } = useAuth()
-
-    // TODO: Replace with actual hook once implemented
+    const { user, token, isAuthenticated } = useAuth()    // Hooks for event data and registration
     const { data: event, isLoading, error } = useEventById(eventId)
+    const { data: userRegistration, isLoading: isCheckingRegistration } = useUserEventRegistration(eventId, event)
+    const registerMutation = useRegisterForEvent()
+    const cancelMutation = useCancelRegistration()
 
-    const [isChatOpen, setIsChatOpen] = useState(false)
+    const [isChatOpen, setIsChatOpen] = useState(false)    // Check if user is already registered
+    const isUserRegistered = !!userRegistration && userRegistration.confirmed
 
     const handleJoinChatRoom = () => {
         if (!isAuthenticated) {
@@ -52,8 +55,42 @@ function EventDetailsPage() {
     }
 
     const handleRegisterForEvent = () => {
-        console.log('Registering for event:', eventId)
-        // TODO: Implement registration logic
+        if (!isAuthenticated || !user) {
+            alert('Vous devez être connecté pour vous inscrire.')
+            navigate({ to: '/auth/login/page' })
+            return
+        }
+
+        if (isUserRegistered) {
+            // User is already registered, handle cancellation
+            cancelMutation.mutate(
+                { eventId, userId: user.sub },
+                {
+                    onSuccess: () => {
+                        alert('Votre inscription a été annulée avec succès.')
+                    },
+                    onError: (error) => {
+                        console.error('Failed to cancel registration:', error)
+                        alert('Erreur lors de l\'annulation de l\'inscription. Veuillez réessayer.')
+                    },
+                }
+            )
+        } else {
+            // Register for event
+            registerMutation.mutate(
+                { eventId, userId: user.sub },
+                {
+                    onSuccess: () => {
+                        alert('Inscription réussie ! Vous recevrez bientôt un email de confirmation avec votre billet.')
+                    },
+                    onError: (error: any) => {
+                        console.error('Failed to register:', error)
+                        const errorMessage = error?.message || 'Erreur lors de l\'inscription. Veuillez réessayer.'
+                        alert(errorMessage)
+                    },
+                }
+            )
+        }
     }
 
     const handleGoBack = () => {
@@ -92,14 +129,18 @@ function EventDetailsPage() {
                 </div>
             </div>
         )
-    }
-
-    const formattedDate = event.eventDate
+    }    const formattedDate = event.eventDate
         ? format(new Date(event.eventDate), 'PPPP à HH:mm', { locale: fr })
         : 'Date non spécifiée'
 
     const isUpcoming = new Date(event.eventDate) > new Date()
     const canRegister = event.isAvailable && isUpcoming && !event.isFull
+    
+    // Determine button state and text
+    const isProcessing = registerMutation.isPending || cancelMutation.isPending || isCheckingRegistration
+    const buttonText = isUserRegistered ? 'Annuler l\'inscription' : 'S\'inscrire à l\'événement'
+    const buttonColor = isUserRegistered ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
+    const showRegistrationButton = canRegister || isUserRegistered
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -142,10 +183,14 @@ function EventDetailsPage() {
                                         <Badge variant="secondary">
                                             Terminé
                                         </Badge>
-                                    )}
-                                    {canRegister && (
+                                    )}                                    {canRegister && (
                                         <Badge className="bg-green-600">
                                             Inscription ouverte
+                                        </Badge>
+                                    )}
+                                    {isUserRegistered && (
+                                        <Badge className="bg-blue-600">
+                                            Inscrit ✓
                                         </Badge>
                                     )}
                                 </div>
@@ -218,19 +263,25 @@ function EventDetailsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="text-lg">Actions</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                {canRegister && (
+                            </CardHeader>                            <CardContent className="space-y-3">
+                                {showRegistrationButton && (
                                     <Button
-                                        className="w-full gap-2 bg-green-600 hover:bg-green-700"
+                                        className={`w-full gap-2 ${buttonColor}`}
                                         onClick={handleRegisterForEvent}
+                                        disabled={isProcessing || !isAuthenticated}
                                     >
                                         <UserCheck className="h-4 w-4" />
-                                        S'inscrire à l'événement
+                                        {isProcessing ? 'Traitement...' : buttonText}
                                     </Button>
                                 )}
 
-                                <Separator />                                {/* Chat Room Button */}
+                                {isUserRegistered && (
+                                    <div className="text-sm text-green-600 bg-green-50 p-2 rounded-md text-center">
+                                        ✅ Vous êtes inscrit(e) à cet événement
+                                    </div>
+                                )}
+
+                                <Separator />{/* Chat Room Button */}
                                 <div className="space-y-2">
                                     <h4 className="font-medium text-sm text-gray-700">Discussion en direct</h4>
                                     <Button

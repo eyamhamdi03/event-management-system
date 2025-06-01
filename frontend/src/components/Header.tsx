@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import { Calendar, User, PlusCircle, LogOut } from 'lucide-react'
+import { Calendar, User, PlusCircle, LogOut, Ticket } from 'lucide-react'
 import { useAuth } from '@/context/auth-context'
 
 export default function Header() {
@@ -36,13 +36,21 @@ export default function Header() {
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
                 Browse Events
-              </Link>
-              <Link
+              </Link>              <Link
                 to="/event/MyEvents/page"
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
               >
                 My Events
               </Link>
+              {isAuthenticated && (
+                <Link
+                  to="/tickets/page"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center space-x-1"
+                >
+                  <Ticket className="h-4 w-4" />
+                  <span>Mes Billets</span>
+                </Link>
+              )}
             </div>
           </nav>{' '}
           {/* Action Buttons */}

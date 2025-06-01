@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as TicketsPageImport } from './routes/tickets/page'
 import { Route as EventEventsPageImport } from './routes/event/events/page'
 import { Route as EventAddPageImport } from './routes/event/add/page'
 import { Route as EventMyEventsPageImport } from './routes/event/MyEvents/page'
@@ -26,6 +27,12 @@ import { Route as AuthCallbackPageImport } from './routes/auth/callback/page'
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TicketsPageRoute = TicketsPageImport.update({
+  id: '/tickets/page',
+  path: '/tickets/page',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -86,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/tickets/page': {
+      id: '/tickets/page'
+      path: '/tickets/page'
+      fullPath: '/tickets/page'
+      preLoaderRoute: typeof TicketsPageImport
       parentRoute: typeof rootRoute
     }
     '/auth/callback/page': {
@@ -151,6 +165,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/tickets/page': typeof TicketsPageRoute
   '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
@@ -163,6 +178,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/tickets/page': typeof TicketsPageRoute
   '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
@@ -176,6 +192,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/tickets/page': typeof TicketsPageRoute
   '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
@@ -190,6 +207,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/tickets/page'
     | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
@@ -201,6 +219,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/tickets/page'
     | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
@@ -212,6 +231,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/tickets/page'
     | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
@@ -225,6 +245,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TicketsPageRoute: typeof TicketsPageRoute
   AuthCallbackPageRoute: typeof AuthCallbackPageRoute
   AuthLoginPageRoute: typeof AuthLoginPageRoute
   AuthSignupPageRoute: typeof AuthSignupPageRoute
@@ -237,6 +258,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TicketsPageRoute: TicketsPageRoute,
   AuthCallbackPageRoute: AuthCallbackPageRoute,
   AuthLoginPageRoute: AuthLoginPageRoute,
   AuthSignupPageRoute: AuthSignupPageRoute,
@@ -258,6 +280,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/tickets/page",
         "/auth/callback/page",
         "/auth/login/page",
         "/auth/signup/page",
@@ -270,6 +293,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/tickets/page": {
+      "filePath": "tickets/page.tsx"
     },
     "/auth/callback/page": {
       "filePath": "auth/callback/page.tsx"

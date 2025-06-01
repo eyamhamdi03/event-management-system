@@ -403,8 +403,19 @@ export class EventService {
       'LOCATION': 'event.location',
       'CREATED_AT': 'event.createdAt',
       'PARTICIPANT_COUNT': 'participantCount', // Handled separately
-    };
+    };    return sortFieldMap[sortBy] || 'event.eventDate';
+  }
 
-    return sortFieldMap[sortBy] || 'event.eventDate';
+  async findEventsByParticipantId(userId: string): Promise<Event[]> {
+    return this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.host', 'host')
+      .leftJoinAndSelect('event.category', 'category')
+      .leftJoinAndSelect('event.registrations', 'registrations')
+      .leftJoinAndSelect('registrations.user', 'registrationUser')
+      .where('registrations.user.id = :userId', { userId })
+      .andWhere('registrations.confirmed = :confirmed', { confirmed: true })
+      .orderBy('event.eventDate', 'ASC')
+      .getMany();
   }
 }
