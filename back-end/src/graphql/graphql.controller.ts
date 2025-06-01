@@ -6,10 +6,10 @@ import { Public } from '../auth/decorators/public.decorator';
 @Controller('graphql')
 @Public()
 export class GraphQLController {
-  constructor(private readonly graphqlService: GraphQLService) {}
+    constructor(private readonly graphqlService: GraphQLService) { }
 
-  @All()
-  async graphql(@Req() req: Request, @Res() res: Response) {
-    return this.graphqlService.getHandler()(req, res);
-  }
+    @All()
+    async graphql(@Req() req: Request, @Res() res: Response) {
+        return this.graphqlService.getHandler()(req, res);
+    }
 }

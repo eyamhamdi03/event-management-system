@@ -12,7 +12,7 @@ async function bootstrap() {
     origin: `http://localhost:${frontendPort}`,
     credentials: true,
   });
-  
+
   await app.listen(process.env.APP_PORT || 3000);
 }
 bootstrap();
