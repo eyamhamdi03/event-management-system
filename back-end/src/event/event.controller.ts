@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Request } from 'express';
 
 import { Event } from './entities/event.entity';
 import { EventService } from './event.service';
@@ -11,6 +12,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { CreateEventDto } from './dto/create-event.dto';
+import { User } from '../user/entities/user.entity';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard) 
@@ -60,15 +62,31 @@ export class EventController {
   async updateEvent(
     @Param('id') id: string,
     @Body() partialEvent: Partial<Event>,
-  ): Promise<Event> {
-    return await this.eventService.updateEvent(id, partialEvent);
+    @Req() req: Request, 
+    ): Promise<Event> {
+    const user = req.user as User;
+    const userId = user?.id;
+    if (!userId) {
+      throw new UnauthorizedException('User information is missing from request.');
+    }
+    return this.eventService.updateEvent(id, partialEvent, userId);
   }
 
   @Delete('soft/:id')
   @Roles(Role.Admin, Role.Organizer)
   @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests/min
-  async softDelete(@Param('id') id: string): Promise<void> {
-    return await this.eventService.softRemoveEvent(id);
+  async softDeleteEvent(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req.user as User;
+    const userId = user?.id;
+    const userRole = user?.role;
+
+    if (!userId || !userRole) {
+      throw new UnauthorizedException('User information is missing from request.');
+    }
+    await this.eventService.softDeleteEvent(id, userId, userRole);
   }
 
   @Post('restore/:id')
