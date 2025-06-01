@@ -21,4 +21,4 @@ import { MailModule } from '../mail/mail.module';
   providers: [EventService],
   exports: [EventService, TypeOrmModule],
 })
-export class EventModule {}
+export class EventModule { }
