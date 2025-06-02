@@ -8,9 +8,10 @@ import { User } from 'src/user/entities/user.entity';
 import { Event } from 'src/event/entities/event.entity';
 import { QrCodeModule } from 'src/qrcode/qrcode.module';
 import { MailModule } from '../mail/mail.module';
+import { TicketModule } from '../ticket/ticket.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Registration, User, Event]), AuthModule, MailModule, QrCodeModule],
+  imports: [TypeOrmModule.forFeature([Registration, User, Event]), AuthModule, MailModule, QrCodeModule, TicketModule],
   controllers: [RegistrationController],
   providers: [RegistrationService],
   exports: [RegistrationService, TypeOrmModule],

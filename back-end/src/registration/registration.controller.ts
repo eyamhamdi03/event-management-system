@@ -29,7 +29,7 @@ export class RegistrationController {
   constructor(
     private readonly registrationService: RegistrationService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   @Get('scan/:id')
   async scanRegistration(@Param('id') id: string, @Res() res: Response) {
@@ -74,16 +74,9 @@ export class RegistrationController {
       eventId,
       userId,
       req.user.role,
-      req.user.id,
+      req.user.sub,
     );
     return { message: 'Registration cancelled successfully' };
-  }
-
-  @Patch('confirm/:id')
-  async confirmRegistration(
-    @Param('id') id: string,
-  ): Promise<Registration> {
-    return await this.registrationService.confirmRegistration(id);
   }
 
   @Patch(':id/check-in')
@@ -92,7 +85,11 @@ export class RegistrationController {
     await this.registrationService.checkInRegistration(id);
     return { message: 'Participant checked in.' };
   }
-
- 
+  @Get('user/me')
+  @Roles(Role.User, Role.Organizer, Role.Admin)
+  async getUserRegistrations(@Req() req: any): Promise<RegistrationResponseDto[]> {
+    const userId = req.user.sub;
+    return await this.registrationService.getUserRegistrations(userId);
+  }
 
 }

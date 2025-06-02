@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { graphqlClient, setAuthToken } from '@/graphql/client'
-import { GET_EVENTS_WITH_FILTER, GET_CATEGORIES } from '@/graphql/queries'
+import { GET_EVENTS_WITH_FILTER, GET_CATEGORIES, GET_EVENT_BY_ID } from '@/graphql/queries'
 import { useAuth } from '@/context/auth-context'
 
 export interface EventsFilter {
@@ -101,6 +101,28 @@ export const useCategoriesGraphQL = () => {
 
             return response.categories
         },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+    })
+}
+
+export const useEventById = (eventId: string) => {
+    const { token } = useAuth()
+
+    return useQuery<Event>({
+        queryKey: ['event', eventId, 'graphql'],
+        queryFn: async () => {
+            if (token) {
+                setAuthToken(token)
+            }
+
+            const response = await graphqlClient.request<{ event: Event }>(
+                GET_EVENT_BY_ID,
+                { id: eventId }
+            )
+
+            return response.event
+        },
+        enabled: !!eventId, // Only run query if eventId is provided
         staleTime: 5 * 60 * 1000, // 5 minutes
     })
 }

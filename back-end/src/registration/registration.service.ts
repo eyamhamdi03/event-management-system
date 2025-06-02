@@ -10,10 +10,11 @@ import { Event } from 'src/event/entities/event.entity';
 import { EventDto, RegistrationResponseDto, UserDto } from './dto/registration-response.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { Role } from 'src/auth/roles.enum';
-import { MailService } from '../mail/mail.service'; 
+import { MailService } from '../mail/mail.service';
 import { QrCodeService } from '../qrcode/qrcode.service';
 import { log } from 'console';
 import { RegistrationExportDto } from './dto/registration-export.dto';
+import { TicketService } from 'src/ticket/ticket.service';
 @Injectable()
 export class RegistrationService {
   constructor(
@@ -24,14 +25,15 @@ export class RegistrationService {
     private readonly userRepo: Repository<User>,
 
     @InjectRepository(Event)
-    private readonly eventRepo: Repository<Event>,    
+    private readonly eventRepo: Repository<Event>,
     private readonly mailService: MailService,
-    private qrCodeService: QrCodeService, 
-  ) {}
+    private qrCodeService: QrCodeService,
+    private readonly ticketService: TicketService,
+  ) { }
 
   async getRegistrations(): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
-      relations: ['user', 'event'], 
+      relations: ['user', 'event'],
     });
 
     return registrations.map((registration) => {
@@ -66,36 +68,37 @@ export class RegistrationService {
   async registerToEvent(eventId: string, userId: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     const event = await this.eventRepo.findOne({ where: { id: eventId } });
-
     if (!event) throw new NotFoundException('Event not found');
-    if (!user ) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('User not found');
 
-    const currentCount = await this.registrationRepo.count({ where: { event: { id: eventId } } });
-
-    if (currentCount >= event.participantLimit) {
-      throw new BadRequestException('Event has reached full capacity');
+    // Fetch or create registration
+    let registration = await this.registrationRepo.findOne({ where: { user: { id: userId }, event: { id: eventId } } });
+    if (!registration) {
+      registration = this.registrationRepo.create({ user, event, confirmed: false });
+      registration = await this.registrationRepo.save(registration);
     }
 
-    const existing = await this.registrationRepo.findOne({
-      where: {
-        user: { id: userId },
-        event: { id: eventId },
-      },
-    });
+    // Issue ticket with mutual exclusion
+    const ticket = await this.ticketService.issueTicket(user, event);
 
-    if (existing) {
-      throw new ConflictException('Already registered');
-    }
+    // Generate passport QR code (containing the scan link)
+    const qrLink = `https://localhost:3000/registration/scan/${registration.id}`;
+    const qrCode = await this.qrCodeService.generateQrCode(qrLink);
 
-    const registration = this.registrationRepo.create({
-      user,
-      event,
-      confirmed: false,
-    });
-    const savedRegistration = await this.registrationRepo.save(registration);
+    // Send passport QR code via email
+    await this.mailService.sendRegistrationConfirmation(
+      user.email,
+      user.fullName,
+      event.title,
+      event.eventDate.toISOString().split('T')[0],
+      qrCode
+    );
 
+    // Confirm registration
+    registration.confirmed = true;
+    await this.registrationRepo.save(registration);
 
-    return { registration: savedRegistration };
+    return { ticket, registration };
   }
 
   async getRegistrationsForEvent(
@@ -103,7 +106,7 @@ export class RegistrationService {
   ): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
       where: { event: { id: eventId } },
-      relations: ['user', 'event'], 
+      relations: ['user', 'event'],
     });
 
     return registrations.map((registration) => {
@@ -148,32 +151,11 @@ export class RegistrationService {
       );
     }
 
-  
-  await this.registrationRepo.remove(registration);
-}
 
-  async confirmRegistration(id: string) {
-    const registration = await this.registrationRepo.findOne({
-      where: { id },
-      relations: ['user', 'event'],
-    });
-    if (!registration) throw new NotFoundException('Registration not found');
-    registration.confirmed = true;
-
-    // Generate QR code for this registration
-    const qrLink = `https://localhost:3000/registration/scan/${registration.id}`;
-    const qrCode = await this.qrCodeService.generateQrCode(qrLink);
-    log('QR Code generated:', qrCode);
-    await this.mailService.sendRegistrationConfirmation(
-      registration.user.email,
-      registration.user.fullName,
-      registration.event.title,
-      registration.event.eventDate.toISOString().split('T')[0],
-      qrCode
-    );
-
-    return this.registrationRepo.save(registration);
+    await this.registrationRepo.remove(registration);
   }
+
+
 
   async get(id: string): Promise<Registration> {
     const registration = await this.registrationRepo.findOne({
@@ -191,13 +173,13 @@ export class RegistrationService {
   }
 
   async handleQrScan(id: string): Promise<string> {
-  const registration = await this.registrationRepo.findOne({
-    where: { id },
-    relations: ['user', 'event'],
-  });
+    const registration = await this.registrationRepo.findOne({
+      where: { id },
+      relations: ['user', 'event'],
+    });
 
-  if (!registration) {
-    return `
+    if (!registration) {
+      return `
       <html>
       <head><title>Invalid</title></head>
       <body style="text-align: center; font-family: sans-serif;">
@@ -208,12 +190,7 @@ export class RegistrationService {
     `;
     }
 
-    if (!registration.confirmed) {
-      registration.confirmed = true;
-      await this.registrationRepo.save(registration);
-    }
-
-  return `
+    return `
     <html>
     <head>
       <title>Registration Info</title>
@@ -243,7 +220,7 @@ export class RegistrationService {
     </body>
     </html>
   `;
-}
+  }
 
   async checkInRegistration(id: string) {
     const registration = await this.registrationRepo.findOne({
@@ -253,6 +230,16 @@ export class RegistrationService {
     if (!registration) throw new NotFoundException('Registration not found');
     registration.checkedIn = true;
     await this.registrationRepo.save(registration);
+
+    // Find and mark the ticket as checked in
+    const ticket = await this.ticketService.findTicketByUserAndEvent(
+      registration.user.id,
+      registration.event.id,
+    );
+    if (ticket && !ticket.checkedIn) {
+      ticket.checkedIn = true;
+      await this.ticketService.updateTicket(ticket);
+    }
 
     // Send thank you email after check-in
     await this.mailService.sendThankYouForParticipation(
@@ -286,7 +273,6 @@ export class RegistrationService {
       },
     }));
   }
-
   async getExportData(eventId: string, type: 'participants' | 'attendants'): Promise<RegistrationExportDto[]> {
     const data =
       type === 'attendants'
@@ -299,5 +285,49 @@ export class RegistrationService {
       confirmed: r.confirmed,
       ...(type === 'attendants' ? { checkedIn: true } : {}),
     }));
+  }
+
+  async getUserRegistrations(userId: string): Promise<RegistrationResponseDto[]> {
+    const registrations = await this.registrationRepo.find({
+      where: { user: { id: userId }, confirmed: true },
+      relations: ['user', 'event', 'event.category', 'event.host'],
+      order: { createdAt: 'DESC' }
+    });
+
+    return registrations.map((registration) => {
+      const dto = new RegistrationResponseDto();
+      dto.id = registration.id;
+      dto.confirmed = registration.confirmed;
+      dto.createdAt = registration.createdAt;
+      dto.eventId = registration.event.id;
+
+      // Map user relation
+      if (registration.user) {
+        const userDto = new UserDto();
+        userDto.id = registration.user.id;
+        userDto.fullName = registration.user.fullName;
+        userDto.email = registration.user.email;
+        dto.user = userDto;
+      }
+
+      // Map event relation with full details
+      if (registration.event) {
+        const eventDto = new EventDto();
+        eventDto.id = registration.event.id;
+        eventDto.title = registration.event.title;
+        // Add additional event properties for tickets
+        (eventDto as any).description = registration.event.description;
+        (eventDto as any).eventDate = registration.event.eventDate;
+        (eventDto as any).location = registration.event.location;
+        (eventDto as any).category = registration.event.category;
+        (eventDto as any).host = registration.event.host;
+        dto.event = eventDto;
+      }
+
+      // Add check-in status
+      (dto as any).checkedIn = registration.checkedIn;
+
+      return dto;
+    });
   }
 }

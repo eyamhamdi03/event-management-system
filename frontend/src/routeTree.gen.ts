@@ -12,9 +12,11 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as TicketsPageImport } from './routes/tickets/page'
 import { Route as EventEventsPageImport } from './routes/event/events/page'
 import { Route as EventAddPageImport } from './routes/event/add/page'
 import { Route as EventMyEventsPageImport } from './routes/event/MyEvents/page'
+import { Route as EventEventIdPageImport } from './routes/event/$eventId/page'
 import { Route as CategoryAddPageImport } from './routes/category/add/page'
 import { Route as AuthSignupPageImport } from './routes/auth/signup/page'
 import { Route as AuthLoginPageImport } from './routes/auth/login/page'
@@ -25,6 +27,12 @@ import { Route as AuthCallbackPageImport } from './routes/auth/callback/page'
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const TicketsPageRoute = TicketsPageImport.update({
+  id: '/tickets/page',
+  path: '/tickets/page',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -43,6 +51,12 @@ const EventAddPageRoute = EventAddPageImport.update({
 const EventMyEventsPageRoute = EventMyEventsPageImport.update({
   id: '/event/MyEvents/page',
   path: '/event/MyEvents/page',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EventEventIdPageRoute = EventEventIdPageImport.update({
+  id: '/event/$eventId/page',
+  path: '/event/$eventId/page',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/tickets/page': {
+      id: '/tickets/page'
+      path: '/tickets/page'
+      fullPath: '/tickets/page'
+      preLoaderRoute: typeof TicketsPageImport
+      parentRoute: typeof rootRoute
+    }
     '/auth/callback/page': {
       id: '/auth/callback/page'
       path: '/auth/callback/page'
@@ -107,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/category/add/page'
       fullPath: '/category/add/page'
       preLoaderRoute: typeof CategoryAddPageImport
+      parentRoute: typeof rootRoute
+    }
+    '/event/$eventId/page': {
+      id: '/event/$eventId/page'
+      path: '/event/$eventId/page'
+      fullPath: '/event/$eventId/page'
+      preLoaderRoute: typeof EventEventIdPageImport
       parentRoute: typeof rootRoute
     }
     '/event/MyEvents/page': {
@@ -137,10 +165,12 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/tickets/page': typeof TicketsPageRoute
   '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
   '/category/add/page': typeof CategoryAddPageRoute
+  '/event/$eventId/page': typeof EventEventIdPageRoute
   '/event/MyEvents/page': typeof EventMyEventsPageRoute
   '/event/add/page': typeof EventAddPageRoute
   '/event/events/page': typeof EventEventsPageRoute
@@ -148,10 +178,12 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/tickets/page': typeof TicketsPageRoute
   '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
   '/category/add/page': typeof CategoryAddPageRoute
+  '/event/$eventId/page': typeof EventEventIdPageRoute
   '/event/MyEvents/page': typeof EventMyEventsPageRoute
   '/event/add/page': typeof EventAddPageRoute
   '/event/events/page': typeof EventEventsPageRoute
@@ -160,10 +192,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/tickets/page': typeof TicketsPageRoute
   '/auth/callback/page': typeof AuthCallbackPageRoute
   '/auth/login/page': typeof AuthLoginPageRoute
   '/auth/signup/page': typeof AuthSignupPageRoute
   '/category/add/page': typeof CategoryAddPageRoute
+  '/event/$eventId/page': typeof EventEventIdPageRoute
   '/event/MyEvents/page': typeof EventMyEventsPageRoute
   '/event/add/page': typeof EventAddPageRoute
   '/event/events/page': typeof EventEventsPageRoute
@@ -173,30 +207,36 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/tickets/page'
     | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
     | '/category/add/page'
+    | '/event/$eventId/page'
     | '/event/MyEvents/page'
     | '/event/add/page'
     | '/event/events/page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/tickets/page'
     | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
     | '/category/add/page'
+    | '/event/$eventId/page'
     | '/event/MyEvents/page'
     | '/event/add/page'
     | '/event/events/page'
   id:
     | '__root__'
     | '/'
+    | '/tickets/page'
     | '/auth/callback/page'
     | '/auth/login/page'
     | '/auth/signup/page'
     | '/category/add/page'
+    | '/event/$eventId/page'
     | '/event/MyEvents/page'
     | '/event/add/page'
     | '/event/events/page'
@@ -205,10 +245,12 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TicketsPageRoute: typeof TicketsPageRoute
   AuthCallbackPageRoute: typeof AuthCallbackPageRoute
   AuthLoginPageRoute: typeof AuthLoginPageRoute
   AuthSignupPageRoute: typeof AuthSignupPageRoute
   CategoryAddPageRoute: typeof CategoryAddPageRoute
+  EventEventIdPageRoute: typeof EventEventIdPageRoute
   EventMyEventsPageRoute: typeof EventMyEventsPageRoute
   EventAddPageRoute: typeof EventAddPageRoute
   EventEventsPageRoute: typeof EventEventsPageRoute
@@ -216,10 +258,12 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TicketsPageRoute: TicketsPageRoute,
   AuthCallbackPageRoute: AuthCallbackPageRoute,
   AuthLoginPageRoute: AuthLoginPageRoute,
   AuthSignupPageRoute: AuthSignupPageRoute,
   CategoryAddPageRoute: CategoryAddPageRoute,
+  EventEventIdPageRoute: EventEventIdPageRoute,
   EventMyEventsPageRoute: EventMyEventsPageRoute,
   EventAddPageRoute: EventAddPageRoute,
   EventEventsPageRoute: EventEventsPageRoute,
@@ -236,10 +280,12 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/tickets/page",
         "/auth/callback/page",
         "/auth/login/page",
         "/auth/signup/page",
         "/category/add/page",
+        "/event/$eventId/page",
         "/event/MyEvents/page",
         "/event/add/page",
         "/event/events/page"
@@ -247,6 +293,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/tickets/page": {
+      "filePath": "tickets/page.tsx"
     },
     "/auth/callback/page": {
       "filePath": "auth/callback/page.tsx"
@@ -259,6 +308,9 @@ export const routeTree = rootRoute
     },
     "/category/add/page": {
       "filePath": "category/add/page.tsx"
+    },
+    "/event/$eventId/page": {
+      "filePath": "event/$eventId/page.tsx"
     },
     "/event/MyEvents/page": {
       "filePath": "event/MyEvents/page.tsx"

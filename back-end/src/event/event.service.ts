@@ -118,8 +118,15 @@ export class EventService {
   }
   async findByHostId(userId: string): Promise<Event[]> {
     return this.eventRepository.find({
-      where: { host: { id: userId } },
-      order: { eventDate: 'ASC' },
+      where: {
+        host: {
+          id: userId,
+        },
+      },
+      relations: ['host', 'category'],
+      order: {
+        eventDate: 'ASC',
+      },
     });
   }
 
@@ -337,7 +344,7 @@ export class EventService {
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations')
-      .leftJoinAndSelect('registrations.user', 'registrationUser'); // Apply filters
+      .leftJoinAndSelect('registrations.user', 'registrationUser');
     if (category) {
       query.andWhere('category.name LIKE :category', {
         category: `%${category}%`,
@@ -431,7 +438,19 @@ export class EventService {
       CREATED_AT: 'event.createdAt',
       PARTICIPANT_COUNT: 'participantCount', // Handled separately
     };
-
     return sortFieldMap[sortBy] || 'event.eventDate';
+  }
+
+  async findEventsByParticipantId(userId: string): Promise<Event[]> {
+    return this.eventRepository
+      .createQueryBuilder('event')
+      .leftJoinAndSelect('event.host', 'host')
+      .leftJoinAndSelect('event.category', 'category')
+      .leftJoinAndSelect('event.registrations', 'registrations')
+      .leftJoinAndSelect('registrations.user', 'registrationUser')
+      .where('registrations.user.id = :userId', { userId })
+      .andWhere('registrations.confirmed = :confirmed', { confirmed: true })
+      .orderBy('event.eventDate', 'ASC')
+      .getMany();
   }
 }

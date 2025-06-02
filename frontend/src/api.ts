@@ -43,3 +43,6 @@ export async function fetchCategories(token?: string) {
     })
     .then((res) => res.data)
 }
+
+// Default export required for Vinxi API handler
+export default {}

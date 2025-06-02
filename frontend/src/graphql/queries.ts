@@ -35,7 +35,6 @@ export const EVENT_FRAGMENT = gql`
   }
 `
 
-// Optimized query to get all events with filtering, sorting and pagination
 export const GET_EVENTS_WITH_FILTER = gql`
   ${EVENT_FRAGMENT}
   query GetEventsWithFilter($filter: EventsFilterInput) {
@@ -51,7 +50,6 @@ export const GET_EVENTS_WITH_FILTER = gql`
   }
 `
 
-// Simple query to get all events (uses optimized backend method)
 export const GET_ALL_EVENTS = gql`
   ${EVENT_FRAGMENT}
   query GetAllEvents {
@@ -61,7 +59,6 @@ export const GET_ALL_EVENTS = gql`
   }
 `
 
-// Query to get a single event by ID
 export const GET_EVENT_BY_ID = gql`
   ${EVENT_FRAGMENT}
   query GetEventById($id: ID!) {

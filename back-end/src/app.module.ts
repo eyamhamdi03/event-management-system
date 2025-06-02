@@ -16,6 +16,7 @@ import { GraphQLModule } from './graphql/graphql.module';
 
 import { QrCodeModule } from './qrcode/qrcode.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ChatModule } from './chat/chat.module';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ dotenv.config();
     QrCodeModule,
     RegistrationModule,
     GraphQLModule,
+    ChatModule,
     TypeOrmModule.forRoot(typeOrmConfig),
     ThrottlerModule.forRoot([
       {
@@ -46,4 +48,4 @@ dotenv.config();
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

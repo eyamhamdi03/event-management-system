@@ -5,12 +5,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from '@tanstack/react-router'
 import { useDeleteEvent } from '@/hooks/useDeleteEvent'
+import { useEffect } from 'react'
 
 export default function MyEventsList() {
   const navigate = useNavigate()
 
   const { data: events = [], isLoading, refetch } = useEvents()
   const deleteEvent = useDeleteEvent()
+  useEffect(() => {
+    if (events) {
+      console.log('Frontend received events:', events)
+    }
+  }, [events])
 
   const handleDelete = async (id: string) => {
     try {
@@ -21,7 +27,7 @@ export default function MyEventsList() {
     }
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8 w-[100%]">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12">

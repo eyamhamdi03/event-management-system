@@ -16,6 +16,7 @@ import { RegistrationResponseDto } from '../registration/dto/registration-respon
 import { RegistrationExportDto } from '../registration/dto/registration-export.dto';
 import { Response } from 'express';
 import { Parser } from 'json2csv';
+import { JwtPayloadDto } from 'src/auth/dto/jwt-payload.dto';
 
 @Controller('event')
 @UseGuards(JwtAuthGuard)
@@ -30,8 +31,8 @@ export class EventController {
   @Roles(Role.Organizer)
   @Throttle({ default: { limit: 30, ttl: 60 } }) // 30 requests/min
   async getMyEvents(@Req() req: Request): Promise<Event[]> {
-    const user = req.user as { id: string };
-    return this.eventService.findByHostId(user.id);
+    const user = req.user as JwtPayloadDto;
+    return this.eventService.findByHostId(user.sub);
   }
   //Get Filter//
   @Get('/withFilter')
@@ -44,6 +45,12 @@ export class EventController {
   async getEvents(): Promise<Event[]> {
     return await this.eventService.getEvents();
   }
+  @Get('/registered')
+@Roles(Role.User)
+async getRegisteredEvents(@Req() req: Request): Promise<Event[]> {
+  const user = req.user as { sub: string }
+  return this.eventService.findEventsByParticipantId(user.sub)
+}
 
   @Get(':id')
   @Public()
@@ -90,12 +97,12 @@ export class EventController {
   @Delete('soft/:id')
   @Roles(Role.Admin, Role.Organizer)
   @Throttle({ default: { limit: 5, ttl: 60 } }) // 5 requests/min
-  async softDeleteEvent(
+  async softDeleteEvent (
     @Param('id') id: string,
     @Req() req: Request,
-  ): Promise<void> {
-    const user = req.user as User;
-    const userId = user?.id;
+  ): Promise<{ success: boolean }> {
+    const user = req.user as JwtPayloadDto;
+    const userId = user?.sub;
     const userRole = user?.role;
 
     if (!userId || !userRole) {
@@ -104,6 +111,7 @@ export class EventController {
       );
     }
     await this.eventService.softRemoveEvent(id);
+     return { success: true };
   }
 
   @Post('restore/:id')
@@ -165,4 +173,5 @@ export class EventController {
     res.attachment(`event-${eventId}-attendants.csv`);
     return res.send(csv);
   }
+
 }
