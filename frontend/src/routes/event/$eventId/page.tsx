@@ -129,13 +129,13 @@ function EventDetailsPage() {
                 </div>
             </div>
         )
-    }    const formattedDate = event.eventDate
+    } const formattedDate = event.eventDate
         ? format(new Date(event.eventDate), 'PPPP à HH:mm', { locale: fr })
         : 'Date non spécifiée'
 
     const isUpcoming = new Date(event.eventDate) > new Date()
     const canRegister = event.isAvailable && isUpcoming && !event.isFull
-    
+
     // Determine button state and text
     const isProcessing = registerMutation.isPending || cancelMutation.isPending || isCheckingRegistration
     const buttonText = isUserRegistered ? 'Annuler l\'inscription' : 'S\'inscrire à l\'événement'

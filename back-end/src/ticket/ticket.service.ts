@@ -10,8 +10,8 @@ export class TicketService {
   constructor(
     @InjectRepository(Ticket)
     private readonly ticketRepo: Repository<Ticket>,
-    private readonly dataSource: DataSource, 
-  ) {}
+    private readonly dataSource: DataSource,
+  ) { }
 
   async issueTicket(user: User, event: Event): Promise<Ticket> {
     return await this.dataSource.transaction(async manager => {

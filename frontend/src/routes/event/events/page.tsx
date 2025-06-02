@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useEventsWithFilter, useCategoriesGraphQL, type EventsFilter, type Event } from '@/hooks/useEventsGraphQL'
+import { useRegisterForEvent } from '@/hooks/useRegistration'
+import { useAuth } from '@/context/auth-context'
 import EventCard from '@/components/events/EventCard'
 import EventFilters from '@/components/events/EventFilters'
 import EventPagination from '@/components/events/EventPagination'
@@ -14,6 +16,9 @@ export const Route = createFileRoute('/event/events/page')({
 
 function RouteComponent() {
   const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
+  const registerMutation = useRegisterForEvent()
+
   const [filter, setFilter] = useState<EventsFilter>({
     page: 1,
     limit: 12,
@@ -47,10 +52,29 @@ function RouteComponent() {
     console.log('View event:', event.id)
     navigate({ to: '/event/$eventId/page', params: { eventId: event.id } })
   }
-
   const handleRegisterForEvent = (event: Event) => {
     console.log('Register for event:', event.id)
-    // Implement registration logic
+
+    if (!isAuthenticated || !user) {
+      alert('Vous devez être connecté pour vous inscrire.')
+      navigate({ to: '/auth/login/page' })
+      return
+    }
+
+    // Register for the event
+    registerMutation.mutate(
+      { eventId: event.id, userId: user.sub },
+      {
+        onSuccess: () => {
+          alert('Inscription réussie ! Vous recevrez bientôt un email de confirmation avec votre billet.')
+        },
+        onError: (error: any) => {
+          console.error('Failed to register:', error)
+          const errorMessage = error?.message || 'Erreur lors de l\'inscription. Veuillez réessayer.'
+          alert(errorMessage)
+        },
+      }
+    )
   }
 
   // Loading skeleton

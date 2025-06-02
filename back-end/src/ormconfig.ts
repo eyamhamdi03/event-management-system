@@ -4,6 +4,7 @@ import { Registration } from './registration/entities/registration.entity';
 import { Category } from './category/entities/category.entity';
 import { Message } from './chat/entities/message.entity';
 import { MessageReaction } from './chat/entities/message-reaction.entity';
+import { Ticket } from './ticket/entities/ticket.entity';
 
 export const typeOrmConfig = {
   type: 'mysql' as const,
@@ -12,6 +13,6 @@ export const typeOrmConfig = {
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [User, Event, Registration, Category, Message, MessageReaction],
+  entities: [User, Event, Registration, Category, Message, MessageReaction, Ticket],
   synchronize: true,
 };

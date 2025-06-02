@@ -10,7 +10,7 @@ import { Event } from 'src/event/entities/event.entity';
 import { EventDto, RegistrationResponseDto, UserDto } from './dto/registration-response.dto';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { Role } from 'src/auth/roles.enum';
-import { MailService } from '../mail/mail.service'; 
+import { MailService } from '../mail/mail.service';
 import { QrCodeService } from '../qrcode/qrcode.service';
 import { log } from 'console';
 import { RegistrationExportDto } from './dto/registration-export.dto';
@@ -25,15 +25,15 @@ export class RegistrationService {
     private readonly userRepo: Repository<User>,
 
     @InjectRepository(Event)
-    private readonly eventRepo: Repository<Event>,    
+    private readonly eventRepo: Repository<Event>,
     private readonly mailService: MailService,
-    private qrCodeService: QrCodeService, 
+    private qrCodeService: QrCodeService,
     private readonly ticketService: TicketService,
-  ) {}
+  ) { }
 
   async getRegistrations(): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
-      relations: ['user', 'event'], 
+      relations: ['user', 'event'],
     });
 
     return registrations.map((registration) => {
@@ -106,7 +106,7 @@ export class RegistrationService {
   ): Promise<RegistrationResponseDto[]> {
     const registrations = await this.registrationRepo.find({
       where: { event: { id: eventId } },
-      relations: ['user', 'event'], 
+      relations: ['user', 'event'],
     });
 
     return registrations.map((registration) => {
@@ -151,9 +151,9 @@ export class RegistrationService {
       );
     }
 
-  
-  await this.registrationRepo.remove(registration);
-}
+
+    await this.registrationRepo.remove(registration);
+  }
 
 
 
@@ -173,13 +173,13 @@ export class RegistrationService {
   }
 
   async handleQrScan(id: string): Promise<string> {
-  const registration = await this.registrationRepo.findOne({
-    where: { id },
-    relations: ['user', 'event'],
-  });
+    const registration = await this.registrationRepo.findOne({
+      where: { id },
+      relations: ['user', 'event'],
+    });
 
-  if (!registration) {
-    return `
+    if (!registration) {
+      return `
       <html>
       <head><title>Invalid</title></head>
       <body style="text-align: center; font-family: sans-serif;">
@@ -189,8 +189,8 @@ export class RegistrationService {
       </html>
     `;
     }
-    
-  return `
+
+    return `
     <html>
     <head>
       <title>Registration Info</title>
@@ -220,7 +220,7 @@ export class RegistrationService {
     </body>
     </html>
   `;
-}
+  }
 
   async checkInRegistration(id: string) {
     const registration = await this.registrationRepo.findOne({

@@ -13,7 +13,7 @@ import { FilterEventsDto } from './dto/filter-events.dto';
 
 @Injectable()
 export class EventService {
- 
+
 
   constructor(
     @InjectRepository(Event)
@@ -101,20 +101,20 @@ export class EventService {
     await this.eventRepository.update(id, partialEvent);
     return this.getEventById(id);
   }
-async findByHostId(userId: string): Promise<Event[]> {
-  
-  return this.eventRepository.find({
-    where: {
-      host: {
-        id: userId,
+  async findByHostId(userId: string): Promise<Event[]> {
+
+    return this.eventRepository.find({
+      where: {
+        host: {
+          id: userId,
+        },
       },
-    },
-    relations: ['host', 'category'],
-    order: {
-      eventDate: 'ASC',
-    },
-  });
-}
+      relations: ['host', 'category'],
+      order: {
+        eventDate: 'ASC',
+      },
+    });
+  }
 
 
   async deleteEvent(id: string): Promise<void> {
@@ -414,7 +414,7 @@ async findByHostId(userId: string): Promise<Event[]> {
       'LOCATION': 'event.location',
       'CREATED_AT': 'event.createdAt',
       'PARTICIPANT_COUNT': 'participantCount', // Handled separately
-    };    return sortFieldMap[sortBy] || 'event.eventDate';
+    }; return sortFieldMap[sortBy] || 'event.eventDate';
   }
 
   async findEventsByParticipantId(userId: string): Promise<Event[]> {
@@ -429,12 +429,4 @@ async findByHostId(userId: string): Promise<Event[]> {
       .orderBy('event.eventDate', 'ASC')
       .getMany();
   }
-  async findEventsByParticipantId(userId: string): Promise<Event[]> {
- 
-
-  return this.eventRepository
-    .createQueryBuilder('event')
-    .innerJoin('event.registrations', 'registration', 'registration.userId = :userId', { userId })
-    .getMany()
-}
 }

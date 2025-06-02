@@ -30,11 +30,11 @@ function TicketsPage() {
 
     const { upcomingTickets, pastTickets } = useMemo(() => {
         if (!registrations) return { upcomingTickets: [], pastTickets: [] }
-        
+
         const now = new Date()
         const upcoming = registrations.filter(reg => new Date(reg.event.eventDate) > now)
         const past = registrations.filter(reg => new Date(reg.event.eventDate) <= now)
-        
+
         return { upcomingTickets: upcoming, pastTickets: past }
     }, [registrations])
 
@@ -232,7 +232,7 @@ function TicketCard({ registration, isPast = false }: TicketCardProps) {
             ctx.font = '12px Arial'
             ctx.fillText('QR Code', 80, 100)
             ctx.fillText(registration.id.substring(0, 12), 70, 120)
-            
+
             const link = document.createElement('a')
             link.download = `ticket-${registration.event.title}-qr.png`
             link.href = canvas.toDataURL()
@@ -265,7 +265,7 @@ function TicketCard({ registration, isPast = false }: TicketCardProps) {
                         </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <Badge 
+                        <Badge
                             variant={registration.confirmed ? 'default' : 'secondary'}
                         >
                             {registration.confirmed ? 'Confirmé' : 'En attente'}
@@ -305,20 +305,20 @@ function TicketCard({ registration, isPast = false }: TicketCardProps) {
                         Télécharger QR
                     </Button>
                 </div>
-                
+
                 {!isPast && !registration.checkedIn && registration.confirmed && (
                     <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                         <p className="text-sm text-blue-800">
-                            💡 <strong>Rappel:</strong> Gardez ce billet à portée de main le jour de l'événement. 
+                            💡 <strong>Rappel:</strong> Gardez ce billet à portée de main le jour de l'événement.
                             Vous recevrez également une copie par email.
                         </p>
                     </div>
                 )}
-                
+
                 {!registration.confirmed && (
                     <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                         <p className="text-sm text-yellow-800">
-                            ⏳ <strong>En attente:</strong> Votre inscription est en cours de validation. 
+                            ⏳ <strong>En attente:</strong> Votre inscription est en cours de validation.
                             Vous recevrez une confirmation par email une fois approuvée.
                         </p>
                     </div>
