@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar, User, PlusCircle, LogOut, Ticket } from 'lucide-react'
 import { useAuth } from '@/context/auth-context'
+import { NotificationBell } from './notifications/NotificationBell'
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -65,10 +66,9 @@ export default function Header() {
                   <span>Create Event</span>
                 </Link>
               </Button>
-            )}
-
-            {isAuthenticated ? (
+            )}            {isAuthenticated ? (
               <div className="flex items-center space-x-4">
+                <NotificationBell />
                 <span className="text-sm text-gray-600">
                   Hello, {user?.fullName || user?.email}
                 </span>

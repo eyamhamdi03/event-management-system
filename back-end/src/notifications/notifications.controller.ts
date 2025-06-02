@@ -17,21 +17,20 @@ import { NotificationDto } from './dto/notification.dto';
 
 @Controller('sse')
 export default class NotificationController implements OnModuleDestroy {
-  constructor(private readonly notifications: NotificationsService) {}
-  @UseGuards(JwtAuthGuard)
+  constructor(private readonly notifications: NotificationsService) { } @UseGuards(JwtAuthGuard)
   @Sse('notifications')
   stream(@Req() req: Request): Observable<MessageEvent> {
-    const { userId } = req.user as { userId: string };
-    console.log('SSE connection opened for userId:', userId);
+    const { sub } = req.user as { sub: string };
+    console.log('SSE connection opened for userId:', sub);
 
-    return this.notifications.connect(userId).pipe(
+    return this.notifications.connect(sub).pipe(
       map((notif) => {
-        console.log('Sending notification to user', userId, notif);
+        console.log('Sending notification to user', sub, notif);
         return { data: notif };
       }),
     );
   }
-  onModuleDestroy() {}
+  onModuleDestroy() { }
 
   @Post('send/:userId')
   sendToUser(

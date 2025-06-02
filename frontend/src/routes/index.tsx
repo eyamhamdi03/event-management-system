@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Users, MapPin, Award, Zap, Shield } from 'lucide-react'
+import { NotificationTestPanel } from '@/components/NotificationTestPanel'
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -30,8 +31,7 @@ function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="text-lg px-8 py-3">
                 <Link to="/auth/signup/page">Get Started</Link>
-              </Button>
-              <Button
+              </Button>              <Button
                 asChild
                 variant="outline"
                 size="lg"
@@ -40,6 +40,11 @@ function HomePage() {
                 <Link to="/auth/login/page">Sign In</Link>
               </Button>
             </div>
+          </div>
+
+          {/* Development Test Panel */}
+          <div className="max-w-2xl mx-auto mt-12">
+            <NotificationTestPanel />
           </div>
         </div>
       </section>

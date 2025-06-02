@@ -6,10 +6,11 @@ import {
 } from '@tanstack/react-router'
 import { Toaster } from 'sonner'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import SSEListener from '../components/sse-listener'
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout'
 import { AuthProvider, useAuth } from '../context/auth-context'
+import { NotificationProvider } from '../context/notification-context'
+import { NotificationManager } from '../components/notifications'
 import Header from '../components/Header'
 import NotFoundComponent from '../components/notfound'
 import { AuthLoadingSpinner } from '../components/AuthLoadingSpinner'
@@ -33,7 +34,7 @@ function AppContent() {
     <>
       <Header />
       <Outlet />
-      <SSEListener />
+      <NotificationManager />
       <TanStackRouterDevtools />
     </>
   )
@@ -62,13 +63,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   }),
 
   notFoundComponent: () => <NotFoundComponent />,
-
   component: () => (
     <RootDocument>
       <AuthProvider>
-        <TanStackQueryLayout>
-          <AppContent />
-        </TanStackQueryLayout>
+        <NotificationProvider>
+          <TanStackQueryLayout>
+            <AppContent />
+          </TanStackQueryLayout>
+        </NotificationProvider>
       </AuthProvider>
     </RootDocument>
   ),
