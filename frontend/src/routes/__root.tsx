@@ -4,7 +4,9 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
+import { Toaster } from 'sonner'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import SSEListener from '../components/sse-listener'
 
 import TanStackQueryLayout from '../integrations/tanstack-query/layout'
 import { AuthProvider, useAuth } from '../context/auth-context'
@@ -31,6 +33,7 @@ function AppContent() {
     <>
       <Header />
       <Outlet />
+      <SSEListener />
       <TanStackRouterDevtools />
     </>
   )
@@ -79,6 +82,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster position="top-right" />
+
         <Scripts />
       </body>
     </html>

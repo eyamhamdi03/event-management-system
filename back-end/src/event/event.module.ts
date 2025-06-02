@@ -10,6 +10,8 @@ import { EventController } from './event.controller';
 import { AuthModule } from 'src/auth/auth.module';
 import { RegistrationModule } from '../registration/registration.module';
 import { MailModule } from '../mail/mail.module';
+import { EventNotificationService } from './event-notification.service';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -17,11 +19,12 @@ import { MailModule } from '../mail/mail.module';
     RegistrationModule,
     ConfigModule,
     AuthModule,
+    NotificationsModule,
     forwardRef(() => RegistrationModule),
     MailModule,
   ],
   controllers: [EventController],
-  providers: [EventService],
+  providers: [EventService, EventNotificationService],
   exports: [EventService, TypeOrmModule],
 })
-export class EventModule { }
+export class EventModule {}

@@ -1,0 +1,17 @@
+export enum NotificationType {
+  EVENT_REGISTRATION = 'EVENT_REGISTRATION',
+  EVENT_CANCELLATION = 'EVENT_CANCELLATION',
+  EVENT_CREATED = 'EVENT_CREATED',
+  EVENT_UPDATED = 'EVENT_UPDATED',
+  SYSTEM_ALERT = 'SYSTEM_ALERT',
+  EVENT_DAY = 'EVENT_DAY',
+  EVENT_STARTED = 'EVENT_STARTED',
+  EVENT_RESTORED = 'EVENT_RESTORED',
+  EVENT_ENDED = 'EVENT_ENDED',
+}
+
+export class NotificationDto {
+  type: NotificationType;
+  message: string;
+  data?: any;
+}

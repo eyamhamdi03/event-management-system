@@ -1,20 +1,22 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'http://localhost:3001',
   withCredentials: true,
 })
 
-
-
-export async function fetchEventsByOrganizer(organizerId: string, token?: string) {
-  return api.get(`/event/withFilter?hostId=${organizerId}`, {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  }).then(res => res.data)
+export async function fetchEventsByOrganizer(
+  organizerId: string,
+  token?: string,
+) {
+  return api
+    .get(`/event/withFilter?hostId=${organizerId}`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+    .then((res) => res.data)
 }
-
 
 export const createEvent = async (eventData: any, token?: string) => {
   const { data } = await api.post('/event', eventData, {
@@ -25,7 +27,6 @@ export const createEvent = async (eventData: any, token?: string) => {
   return data
 }
 
-
 export const deleteEvent = async (id: string, token?: string) => {
   await api.delete(`/event/soft/${id}`, {
     headers: {
@@ -34,9 +35,11 @@ export const deleteEvent = async (id: string, token?: string) => {
   })
 }
 export async function fetchCategories(token?: string) {
-  return api.get('/category', {
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  }).then(res => res.data)
+  return api
+    .get('/category', {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
+    .then((res) => res.data)
 }

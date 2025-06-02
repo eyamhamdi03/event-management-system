@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, MoreThanOrEqual } from 'typeorm';
 import { Event } from './entities/event.entity';
@@ -10,6 +14,7 @@ import { Registration } from 'src/registration/entities/registration.entity';
 import { User } from '../user/entities/user.entity';
 import { Category } from '../category/entities/category.entity';
 import { FilterEventsDto } from './dto/filter-events.dto';
+import { EventNotificationService } from './event-notification.service';
 
 @Injectable()
 export class EventService {
@@ -23,11 +28,14 @@ export class EventService {
     private userRepository: Repository<User>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) { }
+    private readonly eventNotificationService: EventNotificationService,
+  ) {}
   private eventCapacities: Map<string, number> = new Map();
   async getEvents(): Promise<any[]> {
-    const events = await this.eventRepository.find({ relations: ['registrations'] });
-    return events.map(event => {
+    const events = await this.eventRepository.find({
+      relations: ['registrations'],
+    });
+    return events.map((event) => {
       const currentParticipants = event.registrations.length;
       const isFull = currentParticipants >= event.participantLimit;
       return {
@@ -44,7 +52,9 @@ export class EventService {
     const host = await this.userRepository.findOne({ where: { id: hostId } });
     if (!host) throw new NotFoundException('Host not found');
 
-    const category = await this.categoryRepository.findOne({ where: { id: categoryId } });
+    const category = await this.categoryRepository.findOne({
+      where: { id: categoryId },
+    });
 
     if (!category) throw new NotFoundException('Category not found');
 
@@ -55,8 +65,11 @@ export class EventService {
       category,
     });
 
-    return await this.eventRepository.save(event);
+    const created = await this.eventRepository.save(event);
 
+    await this.eventNotificationService.notifyEventCreated(created);
+
+    return created;
   }
   async getEventById(id: string): Promise<any> {
     const event = await this.eventRepository.findOne({
@@ -82,8 +95,11 @@ export class EventService {
     return await this.eventRepository.save(updated);
   }
 
-  async updateEvent(id: string, partialEvent: Partial<Event>, userId: string): Promise<Event> {
-
+  async updateEvent(
+    id: string,
+    partialEvent: Partial<Event>,
+    userId: string,
+  ): Promise<Event> {
     const event = await this.eventRepository.findOne({
       where: { id },
       relations: ['host'],
@@ -97,6 +113,7 @@ export class EventService {
     }
 
     await this.eventRepository.update(id, partialEvent);
+    await this.eventNotificationService.notifyEventUpdated(event);
     return this.getEventById(id);
   }
   async findByHostId(userId: string): Promise<Event[]> {
@@ -111,18 +128,21 @@ export class EventService {
     if (result.affected === 0) {
       throw new NotFoundException(`Event with ID ${id} not found`);
     }
+    await this.eventNotificationService.notifyEventCancelled(result.raw);
   }
   async softRemoveEvent(id: string): Promise<void> {
     const event = await this.getEventById(id);
     await this.eventRepository.softRemove(event);
   }
   async restoreEvent(id: string): Promise<void> {
-    const result = await this.eventRepository.restore(id);
-    if (result.affected === 0) {
+    await this.eventRepository.restore(id);
+    const restored = await this.eventRepository.findOne({ where: { id } });
+    if (!restored) {
       throw new NotFoundException(
-        `Event with ID ${id} not found or not soft deleted`,
+        `Event with ID ${id} not found after restore`,
       );
     }
+    await this.eventNotificationService.notifyEventRestored(restored);
   }
   findAll(): Promise<Event[]> {
     return this.eventRepository.find({
@@ -163,7 +183,8 @@ export class EventService {
       limit = '10',
     } = filter;
 
-    const query = this.eventRepository.createQueryBuilder('event')
+    const query = this.eventRepository
+      .createQueryBuilder('event')
 
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
@@ -171,7 +192,8 @@ export class EventService {
 
     if (category) {
       query.andWhere('category.name = :category', { category });
-    } if (search) {
+    }
+    if (search) {
       query.andWhere(
         '(event.title LIKE :search OR event.description LIKE :search)',
         {
@@ -289,9 +311,13 @@ export class EventService {
     });
   }
 
-  async findAllFilteredForGraphQL(
-    filter: any = {},
-  ): Promise<{ data: Event[]; total: number; page: number; limit: number; totalPages: number }> {
+  async findAllFilteredForGraphQL(filter: any = {}): Promise<{
+    data: Event[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
     const {
       search,
       category,
@@ -311,9 +337,11 @@ export class EventService {
       .leftJoinAndSelect('event.host', 'host')
       .leftJoinAndSelect('event.category', 'category')
       .leftJoinAndSelect('event.registrations', 'registrations')
-      .leftJoinAndSelect('registrations.user', 'registrationUser');    // Apply filters
+      .leftJoinAndSelect('registrations.user', 'registrationUser'); // Apply filters
     if (category) {
-      query.andWhere('category.name LIKE :category', { category: `%${category}%` });
+      query.andWhere('category.name LIKE :category', {
+        category: `%${category}%`,
+      });
     }
 
     if (search) {
@@ -366,15 +394,14 @@ export class EventService {
     const take = Math.min(Math.max(parseInt(String(limit)), 1), 100); // Max 100 items per page
     const skip = (Math.max(parseInt(String(page)), 1) - 1) * take;
 
-    const [data, total] = await query
-      .take(take)
-      .skip(skip)
-      .getManyAndCount();
+    const [data, total] = await query.take(take).skip(skip).getManyAndCount();
 
     // Calculate computed fields
     const enhancedData = data.map((event) => {
       const currentParticipants = event.registrations?.length || 0;
-      const isFull = event.participantLimit ? currentParticipants >= event.participantLimit : false;
+      const isFull = event.participantLimit
+        ? currentParticipants >= event.participantLimit
+        : false;
       const isAvailable = !isFull;
 
       return {
@@ -398,11 +425,11 @@ export class EventService {
 
   private getSortField(sortBy: string): string {
     const sortFieldMap = {
-      'TITLE': 'event.title',
-      'EVENT_DATE': 'event.eventDate',
-      'LOCATION': 'event.location',
-      'CREATED_AT': 'event.createdAt',
-      'PARTICIPANT_COUNT': 'participantCount', // Handled separately
+      TITLE: 'event.title',
+      EVENT_DATE: 'event.eventDate',
+      LOCATION: 'event.location',
+      CREATED_AT: 'event.createdAt',
+      PARTICIPANT_COUNT: 'participantCount', // Handled separately
     };
 
     return sortFieldMap[sortBy] || 'event.eventDate';
